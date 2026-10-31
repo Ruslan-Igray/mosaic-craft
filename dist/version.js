@@ -1,2 +1,2 @@
 'use strict';
-globalThis.MOSAIC_RELEASE=Object.freeze({"version":"1.3.0","build":"d0f8f277ac","assetTag":"1.3.0-bdc30c8eed"});
+globalThis.MOSAIC_RELEASE=Object.freeze({"version":"1.3.1","build":"6df9db1cf8","assetTag":"1.3.1-1e3a1db337"});

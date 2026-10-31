@@ -1,8 +1,8 @@
 
-    #mosaic-full-prototype {padding:14px 0;color-scheme:light dark;font-family:Arial,sans-serif}
+    #mosaic-full-prototype {padding:14px 0;color-scheme:light;color-scheme:only light;font-family:Arial,sans-serif}
     #mosaic-full-prototype *{box-sizing:border-box}
     #mosaic-full-prototype [hidden]{display:none!important}
-    #mosaic-full-prototype .mf-app{--mf-bg:light-dark(#f0f7ff,#142533);--mf-paper:light-dark(#fff,#213748);--mf-text:light-dark(#20364a,#ecf7ff);--mf-muted:light-dark(#526d80,#bfd4e1);--mf-accent:light-dark(#1477bc,#79c9ff);--mf-on:light-dark(#fff,#102e44);--mf-soft:light-dark(#dceeff,#244c67);--mf-line:light-dark(#cddfeb,#496777);--mf-warn:light-dark(#fff0cf,#554421);--mf-error:light-dark(#a43e28,#ffc0a4);width:min(100%,460px);margin:auto;padding:20px;border-radius:27px;background:var(--mf-bg);color:var(--mf-text)}
+    #mosaic-full-prototype .mf-app{--mf-bg:#f0f7ff;--mf-paper:#fff;--mf-text:#20364a;--mf-muted:#526d80;--mf-accent:#1477bc;--mf-on:#fff;--mf-soft:#dceeff;--mf-line:#cddfeb;--mf-warn:#fff0cf;--mf-error:#a43e28;width:min(100%,460px);margin:auto;padding:20px;border-radius:27px;background:var(--mf-bg);color:var(--mf-text)}
     #mosaic-full-prototype button,#mosaic-full-prototype input,#mosaic-full-prototype select,#mosaic-full-prototype textarea,#mosaic-full-prototype a{font-family:inherit;font-size:16px;color:var(--mf-text)}
     #mosaic-full-prototype button,#mosaic-full-prototype .mf-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:11px 13px;border:2px solid transparent;border-radius:15px;background:var(--mf-paper);font-weight:600;line-height:1.25;text-align:center;text-decoration:none}
     #mosaic-full-prototype button[aria-pressed="true"],#mosaic-full-prototype button[aria-selected="true"]{border-color:var(--mf-accent);background:var(--mf-soft)}
@@ -14,7 +14,7 @@
     #mosaic-full-prototype .mf-brand{display:flex;align-items:center;gap:9px;font-size:22px;font-weight:700;color:var(--mf-accent)}
     #mosaic-full-prototype .mf-mark{display:grid;grid-template-columns:repeat(2,10px);gap:3px}
     #mosaic-full-prototype .mf-mark i{width:10px;height:10px;border-radius:50%;background:var(--mf-accent)}
-    #mosaic-full-prototype .mf-mark i:nth-child(2),#mosaic-full-prototype .mf-mark i:nth-child(3){background:light-dark(#63c5de,#61b5c8)}
+    #mosaic-full-prototype .mf-mark i:nth-child(2),#mosaic-full-prototype .mf-mark i:nth-child(3){background:#63c5de}
     #mosaic-full-prototype .mf-diameter{font-size:14px;color:var(--mf-muted);white-space:nowrap}
     #mosaic-full-prototype h2{font-size:25px;line-height:1.18;margin:12px 0 9px;font-weight:700}
     #mosaic-full-prototype h3{font-size:18px;line-height:1.25;margin:20px 0 10px}
@@ -121,21 +121,21 @@
     @media(max-width:370px){#mosaic-full-prototype .mf-app{padding:15px}#mosaic-full-prototype h2{font-size:23px}#mosaic-full-prototype .mf-stock-summary{gap:6px;padding:8px}#mosaic-full-prototype .mf-stock-summary button{font-size:13px;padding:7px 5px}#mosaic-full-prototype .mf-material{grid-template-columns:28px minmax(0,1fr);gap:8px}#mosaic-full-prototype .mf-material>button{grid-column:2;justify-self:start}#mosaic-full-prototype .mf-work-grid{gap:8px}#mosaic-full-prototype .mf-top{padding-right:30px}}
     /* Pixel workshop: blue diamond accents, stone panels and inventory slots. */
     #mosaic-full-prototype .mf-app{
-      --mf-bg:light-dark(#d9e5eb,#202f38);--mf-paper:light-dark(#f1f5f3,#344650);
-      --mf-text:light-dark(#263f49,#eef7f5);--mf-muted:light-dark(#4c6570,#c0d1d6);
-      --mf-accent:light-dark(#167c9e,#63d6e4);--mf-on:light-dark(#fff,#143640);
-      --mf-soft:light-dark(#c5eaf2,#254e5d);--mf-line:light-dark(#a4b9c2,#506973);
-      --mf-edge:light-dark(#58727b,#111f26);--mf-shine:light-dark(#ffffff,#637882);
-      --mf-shadow:light-dark(#8a9fa8,#14222a);--mf-slot:light-dark(#d1dade,#263740);
-      --mf-slot-dark:light-dark(#92a6af,#15252d);--mf-slot-light:light-dark(#f9fbf8,#60747c);
-      --mf-sky:light-dark(#9ddceb,#244e60);--mf-cloud:light-dark(#edf9fa,#60818b);
-      --mf-grass:light-dark(#73a14d,#4f7b40);--mf-grass-top:light-dark(#9ac75b,#79a84d);
-      --mf-earth:light-dark(#8c6c50,#654f40);--mf-earth-dark:light-dark(#705742,#4b3c32);
-      --mf-ore:light-dark(#35b7cc,#51ccda);--mf-ink-shadow:light-dark(#ffffffa6,#0d2028);
-      --mf-bead-hole:light-dark(#f1f5f3,#344650);--mf-peg:light-dark(#92a6af55,#9fbdc044);
-      --mf-warn:light-dark(#f7e8bb,#574925);--mf-error:light-dark(#a43e28,#ffc0a4);
+      --mf-bg:#d9e5eb;--mf-paper:#f1f5f3;
+      --mf-text:#263f49;--mf-muted:#4c6570;
+      --mf-accent:#167c9e;--mf-on:#fff;
+      --mf-soft:#c5eaf2;--mf-line:#a4b9c2;
+      --mf-edge:#58727b;--mf-shine:#ffffff;
+      --mf-shadow:#8a9fa8;--mf-slot:#d1dade;
+      --mf-slot-dark:#92a6af;--mf-slot-light:#f9fbf8;
+      --mf-sky:#9ddceb;--mf-cloud:#edf9fa;
+      --mf-grass:#73a14d;--mf-grass-top:#9ac75b;
+      --mf-earth:#8c6c50;--mf-earth-dark:#705742;
+      --mf-ore:#35b7cc;--mf-ink-shadow:#ffffffa6;
+      --mf-bead-hole:#f1f5f3;--mf-peg:#92a6af55;
+      --mf-warn:#f7e8bb;--mf-error:#a43e28;
       border-radius:0;border:3px solid var(--mf-edge);padding:18px;
-      background-color:var(--mf-bg);background-image:linear-gradient(90deg,transparent 50%,light-dark(#ffffff14,#ffffff03) 50%),linear-gradient(transparent 50%,light-dark(#ffffff14,#ffffff03) 50%);background-size:32px 32px;
+      background-color:var(--mf-bg);background-image:linear-gradient(90deg,transparent 50%,#ffffff14 50%),linear-gradient(transparent 50%,#ffffff14 50%);background-size:32px 32px;
       box-shadow:inset 3px 3px var(--mf-shine),inset -3px -3px var(--mf-shadow),0 6px 0 var(--mf-edge);
     }
     #mosaic-full-prototype button,#mosaic-full-prototype .mf-button{
@@ -145,12 +145,12 @@
     }
     #mosaic-full-prototype button:not(:disabled):active{transform:translateY(2px);box-shadow:inset 2px 2px var(--mf-shadow)}
     #mosaic-full-prototype button[aria-pressed="true"],#mosaic-full-prototype button[aria-selected="true"]{
-      border-color:var(--mf-accent);box-shadow:inset 2px 2px light-dark(#fff9,#84e0e833),inset -2px -3px light-dark(#25839a55,#102c3680);
+      border-color:var(--mf-accent);box-shadow:inset 2px 2px #fff9,inset -2px -3px #25839a55;
     }
     #mosaic-full-prototype .mf-primary,#mosaic-full-prototype #mf-add-color{
-      border-color:light-dark(#205568,#173b47);
-      box-shadow:inset 3px 3px light-dark(#a5ebf188,#cdfbff66),inset -3px -4px light-dark(#0d506d,#32859c);
-      text-shadow:1px 1px light-dark(#0b4c68,#a6eff180);
+      border-color:#205568;
+      box-shadow:inset 3px 3px #a5ebf188,inset -3px -4px #0d506d;
+      text-shadow:1px 1px #0b4c68;
     }
     #mosaic-full-prototype .mf-plain{border:0;box-shadow:none;background:transparent;text-shadow:none}
     #mosaic-full-prototype .mf-plain:not(:disabled):active{box-shadow:none}
@@ -168,7 +168,7 @@
     #mosaic-full-prototype .mf-hero{
       position:relative;overflow:hidden;padding:10px 12px 0;border-radius:0;min-height:210px;
       border:3px solid var(--mf-edge);background:var(--mf-sky);margin:13px 0 14px;isolation:isolate;
-      box-shadow:inset 3px 3px light-dark(#e3ffff99,#8fccdd33);
+      box-shadow:inset 3px 3px #e3ffff99;
     }
     #mosaic-full-prototype .mf-hero::before{content:"";position:absolute;z-index:-1;width:54px;height:16px;left:18px;top:39px;background:var(--mf-cloud);box-shadow:17px -12px 0 var(--mf-cloud),39px 0 var(--mf-cloud),208px 12px 0 var(--mf-cloud),190px 0 0 var(--mf-cloud)}
     #mosaic-full-prototype .mf-hero::after{content:"";position:absolute;z-index:-1;bottom:0;left:0;right:0;height:43px;border-top:10px solid var(--mf-grass-top);background-color:var(--mf-earth);background-image:linear-gradient(90deg,transparent 75%,var(--mf-earth-dark) 75%),linear-gradient(transparent 50%,var(--mf-earth-dark) 50%);background-size:24px 16px;box-shadow:0 -8px 0 var(--mf-grass)}
@@ -232,11 +232,11 @@
     @media(prefers-reduced-motion:reduce){#mosaic-full-prototype button{transition:none}}
   
 /* Standalone mobile app. All assets are bundled for offline use. */
-html{color-scheme:light dark;background:light-dark(#c3d5df,#14242e)}
+html{color-scheme:light;color-scheme:only light;background:#c3d5df}
 body{margin:0;font-family:Arial,sans-serif}
 button,a{cursor:pointer}
 button:disabled{cursor:default}
-button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid light-dark(#176b91,#80e6f0);outline-offset:3px}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #176b91;outline-offset:3px}
 #mosaic-full-prototype{padding:16px 10px 24px;min-width:0}
 #mosaic-full-prototype .mc-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;flex:none}
 #mosaic-full-prototype .mf-nav .mc-icon{width:20px;height:20px}

@@ -137,7 +137,7 @@ html,body{height:100%;width:100%;overflow:hidden}
 #mosaic-full-prototype .mf-achievement,
 #mosaic-full-prototype .mf-secret,
 #mosaic-full-prototype .mc-popup,
-#mosaic-full-prototype .mc-update-panel{position:absolute;z-index:30;left:10px;right:10px;top:50%;transform:translateY(-50%);margin:0;padding:12px;background:var(--mf-paper);border:3px solid var(--mf-accent);box-shadow:0 0 0 100vmax light-dark(#20364066,#06151ccc);max-width:620px;margin-inline:auto}
+#mosaic-full-prototype .mc-update-panel{position:absolute;z-index:30;left:10px;right:10px;top:50%;transform:translateY(-50%);margin:0;padding:12px;background:var(--mf-paper);border:3px solid var(--mf-accent);box-shadow:0 0 0 100vmax #20364066;max-width:620px;margin-inline:auto}
 #mosaic-full-prototype .mf-achievement{top:64px;transform:none;box-shadow:0 4px 0 var(--mf-edge);padding:7px}
 #mosaic-full-prototype .mf-secret p,#mosaic-full-prototype .mc-popup p,#mosaic-full-prototype .mc-update-panel p{font-size:15px;line-height:1.35;margin:0}
 #mosaic-full-prototype .mc-popup>button,#mosaic-full-prototype .mc-update-panel>button{min-height:44px;margin-top:10px;width:100%}
