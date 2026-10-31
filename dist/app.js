@@ -29,7 +29,7 @@
       });
       const boards={square:{name:'Квадрат',short:'Квадрат',description:'14,5 × 14,5 см · 29 × 29 штырьков',type:'square',n:29,total:841},circle:{name:'Круг',short:'Круг',description:'Диаметр 15,2 см · 631 штырёк',type:'circle',total:631},hex:{name:'Шестиугольник',short:'Шести-\nугольник',description:'14,8 × 16,5 см · 631 штырёк',type:'hex',total:631},mini:{name:'Квадрат',short:'Квадрат',description:'28 × 28 см · 104 × 104 штырька',type:'square',n:104,total:10816}};
       const uploads=new Map(),sourceCache=new Map(),geometryCache=new Map(),workCache=new Map(),redoCache=new Map();
-      let state={screen:'home',size:'5',board:'square',source:'dog',fit:'contain',rotation:0,removeWhite:true,k:8,colorMode:'all',provider:'yandex',query:'Собака',palettes:{'5':[],'2.6':[]},stockSelected:'C16',stockFilter:'all',stockPage:0,stockReturn:null,currentWork:null,works:[],draft:null,discoveries:[],creationCounter:0,basicColors:basicDefaults(),colorCounters:{'5':0,'2.6':0}};
+      let state={screen:'home',size:'5',board:'square',source:'dog',fit:'contain',rotation:0,removeWhite:true,imageStyle:'simple',k:8,colorMode:'all',provider:'yandex',query:'Собака',palettes:{'5':[],'2.6':[]},stockSelected:'C16',stockFilter:'all',stockPage:0,stockReturn:null,currentWork:null,works:[],draft:null,discoveries:[],creationCounter:0,basicColors:basicDefaults(),colorCounters:{'5':0,'2.6':0}};
       let diamondTaps=0,creeperTaps=0,migrationNeeded=false;
       let revision=0,storeReady=false,saving=false,pendingSnapshot=null,savePromise=Promise.resolve(true),saveError=null,conflicted=false;
       let viewport={zoom:1,x:0,y:0},tool='view',paint=0,replacement={index:null,candidate:null},exportMode='picture';
@@ -44,10 +44,10 @@
       function bead(hex){const b=node('span','mf-bead');b.style.setProperty('--mf-pigment',hex);b.setAttribute('aria-hidden','true');return b;}
       function packColor(c){return[c.id,c.name,c.hex,c.mode,c.word,c.count,c.accuracy];}
       function unpackColor(a){return{id:a[0],name:a[1],hex:a[2],mode:a[3],word:a[4],count:a[5],accuracy:a[6]};}
-      function packWork(w){return{id:w.id,name:w.name,source:w.source,size:w.size,board:w.board,fit:w.fit,rotation:w.rotation,removeWhite:w.removeWhite,palette:w.palette.map(c=>[c.id,c.name,c.hex]),baseLen:w.baseLen,base:w.base,actions:w.actions,generation:w.generation};}
+      function packWork(w){return{id:w.id,name:w.name,source:w.source,size:w.size,board:w.board,fit:w.fit,rotation:w.rotation,removeWhite:w.removeWhite,...(w.imageStyle?{imageStyle:w.imageStyle}:{}),palette:w.palette.map(c=>[c.id,c.name,c.hex]),baseLen:w.baseLen,base:w.base,actions:w.actions,generation:w.generation};}
       
 function snapshot(){
-        return {schema:'mosaic-craft-1',screen:state.screen,size:state.size,board:state.board,source:state.source,k:state.k,colorMode:state.colorMode,fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite,provider:state.provider,query:state.query,palettes:{'5':state.palettes['5'].map(packColor),'2.6':state.palettes['2.6'].map(packColor)},works:state.works.map(packWork),currentWork:state.currentWork,stockFilter:state.stockFilter,stockSelected:state.stockSelected,stockPage:state.stockPage,discoveries:state.discoveries,creationCounter:state.creationCounter,basicColors:state.basicColors,colorCounters:state.colorCounters};
+        return {schema:'mosaic-craft-1',screen:state.screen,size:state.size,board:state.board,source:state.source,k:state.k,colorMode:state.colorMode,fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite,imageStyle:state.imageStyle,provider:state.provider,query:state.query,palettes:{'5':state.palettes['5'].map(packColor),'2.6':state.palettes['2.6'].map(packColor)},works:state.works.map(packWork),currentWork:state.currentWork,stockFilter:state.stockFilter,stockSelected:state.stockSelected,stockPage:state.stockPage,discoveries:state.discoveries,creationCounter:state.creationCounter,basicColors:state.basicColors,colorCounters:state.colorCounters};
       }
       function savedLabel(text,error=false){
         const el=$('#mc-save-status');el.textContent=text;el.dataset.error=String(error);if(error)message(text);
@@ -108,7 +108,7 @@ function snapshot(){
         }
         p.size=p.size==='2.6'?'2.6':'5';p.board=p.size==='2.6'?'mini':p.board==='mini'||!boards[p.board]?'square':p.board;
         p.colorMode=p.colorMode==='limited'?'limited':'all';p.k=Math.max(1,Math.min(64,Number(p.k)||8));p.query=String(p.query||'Собака').slice(0,80);
-        p.provider=p.provider==='google'?'google':'yandex';p.fit=p.fit==='cover'?'cover':'contain';p.rotation=[0,90,180,270].includes(p.rotation)?p.rotation:0;p.removeWhite=p.removeWhite!==false;
+        p.provider=p.provider==='google'?'google':'yandex';p.fit=['cover','stretch'].includes(p.fit)?p.fit:'contain';p.imageStyle=p.imageStyle==='original'?'original':'simple';p.rotation=[0,90,180,270].includes(p.rotation)?p.rotation:0;p.removeWhite=p.removeWhite!==false;
         p.stockFilter=filterKeys.includes(p.stockFilter)?p.stockFilter:'all';p.stockPage=Math.max(0,Math.floor(Number(p.stockPage)||0));p.stockSelected=String(p.stockSelected||'C01').slice(0,40);
         p.discoveries=Array.isArray(p.discoveries)?[...new Set(p.discoveries.filter(v=>['diamond','craft','creeper','stack'].includes(v)))]:[];
         let counter=Number.isSafeInteger(p.creationCounter)&&p.creationCounter>=0?p.creationCounter:0;
@@ -165,8 +165,31 @@ function snapshot(){
       function processedImage(config){
         const src=sourceCanvas(config.source);if(!src)throw Error('Для этой работы выбери картинку заново.');
         const rotated=document.createElement('canvas'),quarter=((config.rotation||0)/90)%2;rotated.width=quarter?src.height:src.width;rotated.height=quarter?src.width:src.height;const rg=rotated.getContext('2d');rg.translate(rotated.width/2,rotated.height/2);rg.rotate((config.rotation||0)*Math.PI/180);rg.drawImage(src,-src.width/2,-src.height/2);
-        const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.imageSmoothingEnabled=!art[config.source];const factor=(config.fit==='cover'?Math.max(256/rotated.width,256/rotated.height):Math.min(256/rotated.width,256/rotated.height))*.9;const w=rotated.width*factor,h=rotated.height*factor;g.drawImage(rotated,(256-w)/2,(256-h)/2,w,h);const image=g.getImageData(0,0,256,256);
+        const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.imageSmoothingEnabled=!art[config.source];const factor=config.fit==='cover'?Math.max(256/rotated.width,256/rotated.height):Math.min(256/rotated.width,256/rotated.height)*.9;const w=rotated.width*factor,h=rotated.height*factor;g.drawImage(rotated,(256-w)/2,(256-h)/2,w,h);const image=g.getImageData(0,0,256,256);
         if(config.removeWhite){const a=image.data,seen=new Uint8Array(65536),queue=new Int32Array(65536);let head=0,tail=0;const white=i=>{const p=i*4;return a[p+3]<127||(Math.min(a[p],a[p+1],a[p+2])>225&&Math.max(a[p],a[p+1],a[p+2])-Math.min(a[p],a[p+1],a[p+2])<28);};const push=i=>{if(!seen[i]&&white(i)){seen[i]=1;queue[tail++]=i;}};for(let i=0;i<256;i++){push(i);push(65280+i);push(i*256);push(i*256+255);}while(head<tail){const i=queue[head++];a[i*4+3]=0;const x=i%256,y=(i/256)|0;if(x)push(i-1);if(x<255)push(i+1);if(y)push(i-256);if(y<255)push(i+256);}}
+        if(config.fit==='stretch'){
+          const a=image.data;let left=256,top=256,right=-1,bottom=-1;
+          for(let y=0;y<256;y++)for(let x=0;x<256;x++)if(a[(y*256+x)*4+3]>=127){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+          if(right>=left){
+            const shape=points(config.board||'square'),aspect=boards[config.board]?.type==='hex'?Math.sqrt(3)/2:1;
+            const xs=shape.map(p=>(.5+(p.x-.5)*aspect)*255),ys=shape.map(p=>p.y*255),x=Math.floor(Math.min(...xs)),y=Math.floor(Math.min(...ys)),w=Math.ceil(Math.max(...xs))-x+1,h=Math.ceil(Math.max(...ys))-y+1;
+            const cropped=document.createElement('canvas');cropped.width=cropped.height=256;cropped.getContext('2d').putImageData(image,0,0);
+            g.clearRect(0,0,256,256);g.imageSmoothingEnabled=false;g.drawImage(cropped,left,top,right-left+1,bottom-top+1,x,y,w,h);
+            image.data.set(g.getImageData(0,0,256,256).data);
+          }
+        }
+        if(config.imageStyle==='simple'&&!art[config.source]){
+          // A small median filter reduces fine texture; coarse tones reduce tiny gradients.
+          const src=new Uint8ClampedArray(image.data),a=image.data;
+          for(let y=0;y<256;y++)for(let x=0;x<256;x++){
+            const at=(y*256+x)*4;if(src[at+3]<127)continue;
+            for(let channel=0;channel<3;channel++){
+              const values=[];
+              for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||xx>255||yy<0||yy>255)continue;const i=(yy*256+xx)*4;if(src[i+3]>=127)values.push(src[i+channel]);}
+              values.sort((a,b)=>a-b);a[at+channel]=Math.min(255,Math.round(values[values.length>>1]/32)*32);
+            }
+          }
+        }
         return image;
       }
       function points(board){
@@ -189,12 +212,32 @@ function snapshot(){
         for(let step=0;chosen.length<all.length&&step<Math.min(Math.max(1,k),all.length);step++){let winner=-1,score=Infinity;for(let j=0;j<all.length;j++)if(!chosen.includes(j)){let s=0;for(let i=0;i<keys.length;i++)s+=Math.min(best[i],distances[j][i])*weights[i];if(s<score){score=s;winner=j;}}if(winner<0)break;chosen.push(winner);for(let i=0;i<keys.length;i++)best[i]=Math.min(best[i],distances[winner][i]);if(score===0)break;}
         if(!chosen.length)chosen.push(0);const selected=chosen.map(i=>({...all[i]})),assign=new Map();for(let i=0;i<keys.length;i++){let bi=0,bd=Infinity;for(let j=0;j<chosen.length;j++){const d=distances[chosen[j]][i];if(d<bd){bd=d;bi=j;}}assign.set(keys[i],bi);}return{palette:selected,base:pixels.map(key=>key===null?-1:assign.get(key)),pins:p};
       }
+      function expandWork(){
+        try{
+          const w=current();if(!w)return;
+          if(state.works.length>=500)throw Error('В сундуке уже 500 схем. Освободи место для копии.');
+          const data=buildWork(w),used=data.pins.filter((p,i)=>data.indices[i]>=0);
+          if(!used.length)throw Error('Сначала нарисуй что-нибудь на основе.');
+          const x0=Math.min(...used.map(p=>p.x)),x1=Math.max(...used.map(p=>p.x)),y0=Math.min(...used.map(p=>p.y)),y1=Math.max(...used.map(p=>p.y));
+          const pins=data.pins,tx0=Math.min(...pins.map(p=>p.x)),tx1=Math.max(...pins.map(p=>p.x)),ty0=Math.min(...pins.map(p=>p.y)),ty1=Math.max(...pins.map(p=>p.y)),b=boards[w.board];
+          const base=pins.map(p=>{
+            const x=x0+(p.x-tx0)/(tx1-tx0)*(x1-x0),y=y0+(p.y-ty0)/(ty1-ty0)*(y1-y0);
+            if(b.type==='square')return data.indices[Math.round(y*(b.n-1))*b.n+Math.round(x*(b.n-1))];
+            let best=-1,distance=Infinity;
+            for(let i=0;i<pins.length;i++){const d=(pins[i].x-x)**2+(pins[i].y-y)**2;if(d<distance){best=i;distance=d;}}
+            return distance<(.8/28)**2?data.indices[best]:-1;
+          });
+          const copy={...w,id:'W'+Date.now()+Math.random().toString(36).slice(2,6),name:nextCreationName(),fit:'stretch',base,baseLen:w.palette.length,palette:w.palette.map(c=>({...c})),actions:[],generation:undefined};
+          state.works.unshift(copy);openWork(copy);message('Макс, растянули до краёв! Исходная схема осталась в «Мои работы».');saveState();
+        }catch(error){message(error.message||'Не удалось увеличить рисунок.');}
+      }
+
       function buildWork(w){
         let cache=workCache.get(w.id);if(!cache&&w.base){cache={pins:points(w.board),base:w.base};workCache.set(w.id,cache);}if(!cache){const raw=quantize(w,w.palette.slice(0,w.baseLen),w.baseLen);cache={pins:raw.pins,base:raw.base.map(i=>i<0?-1:w.palette.findIndex(c=>c.id===raw.palette[i].id))};workCache.set(w.id,cache);}
         const indices=cache.base.slice();for(const a of w.actions){if(a[0]===0){if(a[1]>=0&&a[1]<indices.length)indices[a[1]]=a[2];}else if(a[0]===1){for(let i=0;i<indices.length;i++)if(indices[i]===a[1])indices[i]=a[2];}else if(a[0]===2){for(const pair of a[1])indices[pair[0]]=pair[1];}else if(a[0]===3){indices.fill(-1);}}
         const counts=w.palette.map(()=>0);for(const i of indices)if(i>=0&&i<counts.length)counts[i]++;return{pins:cache.pins,indices,counts,total:counts.reduce((a,b)=>a+b,0)};
       }
-      function makeWork(source,size,board,name){if(state.works.length>=500)throw Error('В сундуке уже 500 схем. Скачай копию и освободи место.');const config={source,size,board,name:name||sourceName(source),fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite};const available=state.palettes[size].filter(isAvailable),limit=source==='blank'?available.length:state.colorMode==='limited'?Math.min(state.k,available.length):available.length;
+      function makeWork(source,size,board,name){if(state.works.length>=500)throw Error('В сундуке уже 500 схем. Скачай копию и освободи место.');const config={source,size,board,name:name||sourceName(source),fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite,imageStyle:state.imageStyle};const available=state.palettes[size].filter(isAvailable),limit=source==='blank'?available.length:state.colorMode==='limited'?Math.min(state.k,available.length):available.length;
         const q=source==='blank'?{palette:available.map(c=>({...c})),base:points(board).map(()=>-1),pins:points(board)}:quantize(config,available,limit);if(!available.length)throw Error('Сначала добавь свои цвета в наличии.');
         if(source!=='blank'&&q.base.every(i=>i<0))throw Error('Картинка получилась пустой. Попробуй отключить удаление светлого фона или выбери другую картинку.');if(!name&&!art[source])config.name=nextCreationName();const w={...config,id:'W'+Date.now()+Math.random().toString(36).slice(2,6),palette:q.palette.map(c=>({id:c.id,name:c.name,hex:c.hex})),baseLen:q.palette.length,base:q.base,actions:[],generation:{mode:state.colorMode,available:available.length,limit}};workCache.set(w.id,{pins:q.pins,base:q.base});state.works.unshift(w);return w;}
       function drawWork(canvas,w,opts={}){
@@ -224,7 +267,7 @@ function snapshot(){
       function renderHome(){$('#mc-onboarding').hidden=palette().length>0;drawSource($('#mf-home-art'),'creeper');renderExamples($('#mf-home-examples'),['creeper','pickaxe','dog']);if(state.discoveries.includes('diamond'))$('#mf-home-secret-hint').textContent='Секрет найден. Алмазный блок откроет его снова.';}
       function renderSearch(){ $('#mf-search').value=state.query;$$('[data-mf-provider]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfProvider===state.provider));}
       function renderSetup(){
-        if(state.size==='2.6')state.board='mini';else if(state.board==='mini')state.board='square';const prepared=processedImage(state),thumb=document.createElement('canvas');thumb.width=thumb.height=256;thumb.getContext('2d').putImageData(prepared,0,0);const preview=$('#mf-source-preview').getContext('2d');preview.clearRect(0,0,128,128);preview.imageSmoothingEnabled=false;preview.drawImage(thumb,0,0,128,128);$('#mf-source-name').textContent=sourceName(state.source);$$('[data-mf-size]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfSize===state.size));$$('[data-mf-fit]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfFit===state.fit));$('#mf-white-bg').checked=state.removeWhite;
+        if(state.size==='2.6')state.board='mini';else if(state.board==='mini')state.board='square';const prepared=processedImage(state),thumb=document.createElement('canvas');thumb.width=thumb.height=256;thumb.getContext('2d').putImageData(prepared,0,0);const preview=$('#mf-source-preview').getContext('2d');preview.clearRect(0,0,128,128);preview.imageSmoothingEnabled=false;preview.drawImage(thumb,0,0,128,128);$('#mf-source-name').textContent=sourceName(state.source);$$('[data-mf-size]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfSize===state.size));$$('[data-mf-fit]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfFit===state.fit));$('#mf-white-bg').checked=state.removeWhite;$('#mc-simple-photo').checked=state.imageStyle==='simple';$('#mc-fit-hint').textContent=state.fit==='stretch'?'Уберём пустые поля и растянем рисунок до краёв. Пропорции могут измениться.':state.fit==='cover'?'Заполним основу с обрезкой краёв картинки.':'Сохраним весь рисунок и его пропорции.';
         const box=$('#mf-boards');box.replaceChildren();box.className=state.size==='5'?'mf-board-grid':'';
         for(const key of state.size==='5'?['square','circle','hex']:['mini']){const b=boards[key],shape=node('span','mf-shape'+(b.type==='circle'?' mf-circle':b.type==='hex'?' mf-hex':''));shape.setAttribute('aria-hidden','true');if(key==='mini'){const row=node('div','mf-one-board');row.append(shape,node('strong','','Квадрат 104 × 104'));box.append(row);}else{const item=button('', 'mf-board',()=>{state.board=key;renderSetup();saveState();});item.setAttribute('aria-label',b.name);item.setAttribute('aria-pressed',state.board===key);const name=node('span');if(key==='hex'){name.append(document.createTextNode('Шести-'),node('br'),document.createTextNode('угольник'));}else name.textContent=b.name;item.append(shape,name);box.append(item);}}
         $('#mf-board-description').textContent=boards[state.board].description;const active=availablePalette();$('#mf-setup-colors').replaceChildren();for(const c of active.slice(0,8)){const chip=node('span','mf-chip');chip.style.setProperty('--mf-pigment',c.hex);chip.setAttribute('aria-label',c.name);$('#mf-setup-colors').append(chip);}$('#mf-palette-count').textContent=active.length?'Доступно '+active.length+' из '+palette().length+' цветов':'Добавь свои цвета в наличии';
@@ -481,13 +524,15 @@ function snapshot(){
       $('#mf-search-button').addEventListener('click',()=>{
         state.query=$('#mf-search').value.trim()||'Собака';
         if(!navigator.onLine){message('Для поиска нужен интернет. Можно выбрать готовый рецепт или своё фото.');return;}
-        const query=state.query+' простой цветной рисунок один персонаж целиком на белом фоне без текста';
+        const query=state.query+' векторный клипарт простой рисунок плоские цвета без теней без градиентов один предмет целиком на белом фоне без текста';
         const url=state.provider==='google'?'https://www.google.com/search?tbm=isch&safe=active&q='+encodeURIComponent(query):'https://yandex.ru/images/search?family=2&text='+encodeURIComponent(query);
         const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.click();
         $('#mf-search-hint').textContent='Сохрани картинку из поиска. Вернись сюда и нажми «Выбрать скачанную картинку».';
         $('#mf-search-results').hidden=false;renderExamples($('#mf-search-examples'),['creeper','pickaxe','dog']);saveState();
       });
       function toggle(buttonId,panelId){const b=$(buttonId),p=$(panelId);p.hidden=!p.hidden;b.setAttribute('aria-expanded',!p.hidden);layout.refresh(p.hidden?b:p);}
+      $('#mc-simple-photo').addEventListener('change',()=>{state.imageStyle=$('#mc-simple-photo').checked?'simple':'original';renderSetup();saveState();});
+      $('#mc-expand-work').addEventListener('click',expandWork);
       $('#mf-prepare-toggle').addEventListener('click',()=>toggle('#mf-prepare-toggle','#mf-image-options'));$('#mf-edit-toggle').addEventListener('click',openDrawing);
       $$('[data-mf-fit]').forEach(b=>b.addEventListener('click',()=>{state.fit=b.dataset.mfFit;renderSetup();saveState();}));$('#mf-rotate').addEventListener('click',()=>{state.rotation=(state.rotation+90)%360;renderSetup();saveState();});$('#mf-white-bg').addEventListener('change',()=>{state.removeWhite=$('#mf-white-bg').checked;renderSetup();saveState();});
       $$('[data-mf-size]').forEach(b=>b.addEventListener('click',()=>{state.size=b.dataset.mfSize;state.board=state.size==='2.6'?'mini':'square';$('#mf-top-size').textContent=state.size==='5'?'5 мм':'2,6 мм';renderSetup();saveState();}));

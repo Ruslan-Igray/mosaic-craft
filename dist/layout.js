@@ -11,7 +11,7 @@ globalThis.MosaicLayout=(()=>{
     const title=document.createElement('h2');title.textContent='Меню мастерской';
     const back=document.createElement('button');back.type='button';back.className='mf-plain';back.dataset.mfGo='home';back.textContent='К верстаку';
     more.append(back,title,root.querySelector('.mc-footer'));main.append(more);screens.push(more);
-    const flatIds=new Set(['mf-image-options','mf-settings','mf-edit-tools','mf-paints','mc-work-settings','mf-materials-list','mf-replace-candidates','mf-works-grid','mf-shade-options','mf-quantity-number','mf-search-results','mf-backup-status']);
+    const flatIds=new Set(['mf-image-options','mc-color-options','mf-settings','mf-edit-tools','mf-paints','mc-work-settings','mf-materials-list','mf-replace-candidates','mf-works-grid','mf-shade-options','mf-quantity-number','mf-search-results','mf-backup-status']);
     const pages=new Map();let active='home',queued=false,preferred=null,lastStockSize=0;
     const el=(tag,cls,text)=>{const n=document.createElement(tag);n.className=cls;if(text)n.textContent=text;return n;};
     const hide=(n,value)=>{if(n.hidden!==value)n.hidden=value;};
