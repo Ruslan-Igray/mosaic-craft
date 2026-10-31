@@ -166,5 +166,82 @@ html,body{height:100%;width:100%;overflow:hidden}
 #mosaic-full-prototype.mc-keyboard .mf-app{grid-template-areas:"content";grid-template-columns:1fr;grid-template-rows:1fr}
 #mosaic-full-prototype.mc-keyboard .mf-top,#mosaic-full-prototype.mc-keyboard .mf-nav,#mosaic-full-prototype.mc-keyboard .mc-app-footer{display:none}
 #mosaic-full-prototype [hidden],#mosaic-full-prototype .mc-flat[hidden]{display:none!important}
+
+/* Keep the stock input and save button above the phone keyboard. */
+#mosaic-full-prototype.mc-keyboard .mf-app[data-view="color"] #mc-color-form{display:flex;flex-direction:column;justify-content:center}
+#mosaic-full-prototype.mc-keyboard .mf-app[data-view="color"] #mc-basic-grid,
+#mosaic-full-prototype.mc-keyboard .mf-app[data-view="color"] .mc-color-preview,
+#mosaic-full-prototype.mc-keyboard .mf-app[data-view="color"] .mc-color-tools{display:none}
 #mosaic-full-prototype .mc-screen-body .mf-error{margin:0}
 #mosaic-full-prototype .mc-screen-body .mf-error:empty,#mosaic-full-prototype .mc-screen-body .mf-live:empty,#mosaic-full-prototype .mc-screen-body .mf-small:empty{display:none}
+
+/* The complete color editor stays in one window, including quantity and save. */
+#mosaic-full-prototype .mf-app[data-view="color"],#mosaic-full-prototype .mf-app[data-view="draw"]{grid-template-areas:"content";grid-template-columns:1fr;grid-template-rows:minmax(0,1fr)}
+#mosaic-full-prototype .mf-app[data-view="color"]>.mf-top,#mosaic-full-prototype .mf-app[data-view="color"]>.mf-nav,#mosaic-full-prototype .mf-app[data-view="color"]>.mc-app-footer,
+#mosaic-full-prototype .mf-app[data-view="draw"]>.mf-top,#mosaic-full-prototype .mf-app[data-view="draw"]>.mf-nav,#mosaic-full-prototype .mf-app[data-view="draw"]>.mc-app-footer{display:none}
+#mosaic-full-prototype .mc-main>[data-mf-screen="color"]{display:grid;grid-template-rows:44px minmax(0,1fr) 48px;gap:6px}
+#mosaic-full-prototype .mc-color-heading,#mosaic-full-prototype .mc-draw-heading{display:grid;grid-template-columns:44px minmax(0,1fr) 76px;align-items:center;gap:6px;min-height:44px}
+#mosaic-full-prototype .mc-color-heading h2{font-size:18px;line-height:1.2;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin:0}
+#mosaic-full-prototype .mc-color-heading button,#mosaic-full-prototype .mc-draw-heading button{height:44px;min-height:44px;padding:4px}
+#mosaic-full-prototype #mc-color-back,#mosaic-full-prototype #mc-draw-back{font-size:28px;line-height:1}
+#mosaic-full-prototype #mc-color-form{display:grid;grid-template-columns:1fr;grid-template-rows:188px 60px 44px 44px;align-content:start;gap:6px;min-height:0}
+#mosaic-full-prototype #mc-basic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,44px);gap:4px}
+#mosaic-full-prototype .mc-basic-color{min-height:44px;height:44px;padding:4px;font-size:14px;line-height:1.1;overflow:hidden;min-width:0;overflow-wrap:anywhere}
+#mosaic-full-prototype .mc-basic-color[aria-pressed="true"]{border:3px solid var(--mf-accent)}
+#mosaic-full-prototype .mc-color-preview{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:8px;min-height:60px}
+#mosaic-full-prototype .mc-color-preview>.mf-bead{width:48px;height:48px}
+#mosaic-full-prototype .mc-color-preview label{display:block;font-size:14px;line-height:16px;margin:0;height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mosaic-full-prototype .mc-color-preview input{display:block;height:44px;margin:0}
+#mosaic-full-prototype .mc-color-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#mosaic-full-prototype .mc-color-tools button{min-height:44px;height:44px;padding:5px;font-size:16px}
+#mosaic-full-prototype #mf-quantity-words{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+#mosaic-full-prototype #mf-quantity-words button{min-height:44px;height:44px;font-size:14px;padding:4px}
+#mosaic-full-prototype #mf-quantity-number{display:grid;grid-template-columns:44px minmax(0,1fr) 105px;gap:4px}
+#mosaic-full-prototype #mf-quantity-number input,#mosaic-full-prototype #mf-quantity-number select,#mosaic-full-prototype #mf-quantity-number button{width:100%;height:44px;min-height:44px;padding:6px;font-size:16px;margin:0}
+#mosaic-full-prototype #mf-quantity-number select{background:var(--mf-paper);border:2px solid var(--mf-edge)}
+#mosaic-full-prototype .mc-color-actions{display:flex;gap:6px}
+#mosaic-full-prototype .mc-color-actions button{height:48px;min-height:48px;margin:0;font-size:16px;padding:6px}
+#mosaic-full-prototype #mc-delete-color{width:86px;flex:none}
+#mosaic-full-prototype #mf-save-color{flex:1;min-width:0}
+#mosaic-full-prototype #mf-quantity-error{display:none}
+#mosaic-full-prototype .mc-palette-modal{display:grid;gap:6px}
+#mosaic-full-prototype .mc-palette-modal h3{font-size:19px;margin:0;line-height:1.2}
+#mosaic-full-prototype .mc-palette-modal>button{margin:0;min-height:44px}
+#mosaic-full-prototype .mc-palette-modal .mf-split{gap:6px}
+#mosaic-full-prototype .mc-palette-modal .mf-split button{min-height:44px;padding:6px;font-size:15px}
+#mosaic-full-prototype .mc-shade-sliders{display:grid;gap:6px}
+#mosaic-full-prototype .mc-shade-sliders label{font-size:15px;margin:0}
+#mosaic-full-prototype #mc-shade-bead{width:56px;height:56px;margin:0 auto}
+#mosaic-full-prototype #mc-pipette-canvas{width:100%;height:clamp(64px,calc(var(--mc-viewport-height,100dvh) - 230px),240px);display:block;touch-action:none;background:#fff;image-rendering:pixelated}
+#mosaic-full-prototype .mc-picked-row{display:flex;align-items:center;gap:10px;min-height:36px;font-size:15px}
+#mosaic-full-prototype .mc-picked-row .mf-bead{width:32px;height:32px}
+#mosaic-full-prototype #mc-delete-selected{color:var(--mf-error)}
+
+/* Free drawing keeps the board, palette and history controls together. */
+#mosaic-full-prototype .mc-main>[data-mf-screen="draw"]{display:grid;grid-template-rows:44px minmax(0,1fr);gap:6px}
+#mosaic-full-prototype .mc-draw-heading>div{min-width:0}
+#mosaic-full-prototype #mc-draw-name{display:block;font-size:16px;line-height:20px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+#mosaic-full-prototype #mc-draw-zoom{font-size:13px;color:var(--mf-muted)}
+#mosaic-full-prototype .mc-draw-form{display:grid;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:8px;min-height:0}
+#mosaic-full-prototype .mc-draw-board{min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;background:var(--mf-paper);border:2px solid var(--mf-edge)}
+#mosaic-full-prototype #mc-draw-canvas{width:100%;height:100%;touch-action:none;display:block;max-width:100%;max-height:100%}
+#mosaic-full-prototype .mc-draw-controls{display:flex;flex-direction:column;gap:6px;min-width:0}
+#mosaic-full-prototype .mc-draw-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) 44px 44px;gap:4px}
+#mosaic-full-prototype .mc-draw-tools button{min-height:44px;height:44px;font-size:13px;padding:4px}
+#mosaic-full-prototype #mc-draw-colors{display:flex;gap:4px;min-height:44px;justify-content:center}
+#mosaic-full-prototype #mc-draw-colors button{height:44px;width:44px;min-height:44px;min-width:44px;padding:4px;font-size:20px}
+#mosaic-full-prototype .mc-draw-actions{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:4px}
+#mosaic-full-prototype .mc-draw-actions button{height:44px;min-height:44px;font-size:13px;padding:4px}
+#mosaic-full-prototype #mc-draw-status{font-size:13px;line-height:17px;margin:0;min-height:17px}
+@media(min-width:600px),(orientation:landscape){
+ #mosaic-full-prototype #mc-color-form{grid-template-columns:minmax(180px,40%) minmax(0,1fr);grid-template-rows:60px 44px 44px}
+ #mosaic-full-prototype #mc-basic-grid{grid-column:1;grid-row:1/4}
+ #mosaic-full-prototype .mc-color-preview,#mosaic-full-prototype .mc-color-tools,#mosaic-full-prototype #mc-color-quantity{grid-column:2}
+ #mosaic-full-prototype .mc-draw-form{grid-template-columns:minmax(0,1fr) minmax(292px,42%);grid-template-rows:minmax(0,1fr)}
+ #mosaic-full-prototype .mc-draw-controls{align-self:center}
+}
+@media(max-height:500px) and (min-width:500px){
+ #mosaic-full-prototype .mc-shade-sliders{grid-template-columns:1fr 1fr;gap:12px}
+ #mosaic-full-prototype #mc-shade-bead{width:44px;height:44px}
+}
+#mosaic-full-prototype [hidden],#mosaic-full-prototype .mc-flat[hidden]{display:none!important}

@@ -1,5 +1,5 @@
 'use strict';
-const RELEASE = {"version":"1.2.0","build":"e688576096","assetTag":"1.2.0-1ca36ae865"};
+const RELEASE = {"version":"1.3.0","build":"d0f8f277ac","assetTag":"1.3.0-bdc30c8eed"};
 const PREFIX = 'mosaic-craft:' + new URL(self.registration.scope).pathname + ':';
 const CACHE = PREFIX + RELEASE.version + '-' + RELEASE.build;
 const versioned = file => './' + file + '?v=' + RELEASE.assetTag;

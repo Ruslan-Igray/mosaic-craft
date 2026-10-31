@@ -1,7 +1,7 @@
 
     (async()=>{
       const root=document.getElementById('mosaic-full-prototype'),$=s=>root.querySelector(s),$$=s=>[...root.querySelectorAll(s)];
-      const words={many:'Много',medium:'Средне',few:'Мало',none:'Нету'},filterKeys=['all','number','many','medium','few','none'];
+      const words={many:'Много',medium:'Средне',few:'Мало',none:'Нету'},filterKeys=['all','number','many','medium','few'];
       const seedColors=[['Белый','#f4f2e9'],['Кремовый','#e7d6b0'],['Жёлтый','#f1ce3c'],['Горчичный','#bb9228'],['Оранжевый','#ef963e'],['Красный','#cf483c'],['Бордовый','#8b3435'],['Коричневый','#7b4d30'],['Кофейный','#573d30'],['Чёрный','#292e34'],['Тёмно-серый','#5b6770'],['Серый','#919ba1'],['Светло-серый','#c9d0d3'],['Тёмно-синий','#254b77'],['Синий','#386eb5'],['Голубой','#65b9e9'],['Ледяной','#afe1f3'],['Бирюзовый','#3ebdbd'],['Тёмно-бирюзовый','#217a83'],['Зелёный','#4aa875'],['Тёмно-зелёный','#24674c'],['Салатовый','#91c75b'],['Лаймовый','#c1d853'],['Оливковый','#778438'],['Песочный','#c6a76a'],['Медный','#ad713f'],['Терракотовый','#c76b48'],['Хвойный','#3d7364'],['Лазурный','#3b9acc'],['Морская волна','#68b9aa']];
       function seedPalette(){return seedColors.map(([name,hex],i)=>({id:'C'+String(i+1).padStart(2,'0'),name,hex,mode:i%5===4?'number':'words',word:['many','medium','few','none'][i%5]||null,count:i%5===4?[120,250,40,80,200,0][Math.floor(i/5)]:null,accuracy:i%10===4?'approx':'exact'}));}
       const art={
@@ -29,7 +29,7 @@
       });
       const boards={square:{name:'Квадрат',short:'Квадрат',description:'14,5 × 14,5 см · 29 × 29 штырьков',type:'square',n:29,total:841},circle:{name:'Круг',short:'Круг',description:'Диаметр 15,2 см · 631 штырёк',type:'circle',total:631},hex:{name:'Шестиугольник',short:'Шести-\nугольник',description:'14,8 × 16,5 см · 631 штырёк',type:'hex',total:631},mini:{name:'Квадрат',short:'Квадрат',description:'28 × 28 см · 104 × 104 штырька',type:'square',n:104,total:10816}};
       const uploads=new Map(),sourceCache=new Map(),geometryCache=new Map(),workCache=new Map(),redoCache=new Map();
-      let state={screen:'home',size:'5',board:'square',source:'dog',fit:'contain',rotation:0,removeWhite:true,k:8,colorMode:'all',provider:'yandex',query:'Собака',palettes:{'5':[],'2.6':[]},stockSelected:'C16',stockFilter:'all',stockPage:0,stockReturn:null,currentWork:null,works:[],draft:null,discoveries:[],creationCounter:0};
+      let state={screen:'home',size:'5',board:'square',source:'dog',fit:'contain',rotation:0,removeWhite:true,k:8,colorMode:'all',provider:'yandex',query:'Собака',palettes:{'5':[],'2.6':[]},stockSelected:'C16',stockFilter:'all',stockPage:0,stockReturn:null,currentWork:null,works:[],draft:null,discoveries:[],creationCounter:0,basicColors:basicDefaults(),colorCounters:{'5':0,'2.6':0}};
       let diamondTaps=0,creeperTaps=0,migrationNeeded=false;
       let revision=0,storeReady=false,saving=false,pendingSnapshot=null,savePromise=Promise.resolve(true),saveError=null,conflicted=false;
       let viewport={zoom:1,x:0,y:0},tool='view',paint=0,replacement={index:null,candidate:null},exportMode='picture';
@@ -47,7 +47,7 @@
       function packWork(w){return{id:w.id,name:w.name,source:w.source,size:w.size,board:w.board,fit:w.fit,rotation:w.rotation,removeWhite:w.removeWhite,palette:w.palette.map(c=>[c.id,c.name,c.hex]),baseLen:w.baseLen,base:w.base,actions:w.actions,generation:w.generation};}
       
 function snapshot(){
-        return {schema:'mosaic-craft-1',screen:state.screen,size:state.size,board:state.board,source:state.source,k:state.k,colorMode:state.colorMode,fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite,provider:state.provider,query:state.query,palettes:{'5':state.palettes['5'].map(packColor),'2.6':state.palettes['2.6'].map(packColor)},works:state.works.map(packWork),currentWork:state.currentWork,stockFilter:state.stockFilter,stockSelected:state.stockSelected,stockPage:state.stockPage,discoveries:state.discoveries,creationCounter:state.creationCounter};
+        return {schema:'mosaic-craft-1',screen:state.screen,size:state.size,board:state.board,source:state.source,k:state.k,colorMode:state.colorMode,fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite,provider:state.provider,query:state.query,palettes:{'5':state.palettes['5'].map(packColor),'2.6':state.palettes['2.6'].map(packColor)},works:state.works.map(packWork),currentWork:state.currentWork,stockFilter:state.stockFilter,stockSelected:state.stockSelected,stockPage:state.stockPage,discoveries:state.discoveries,creationCounter:state.creationCounter,basicColors:state.basicColors,colorCounters:state.colorCounters};
       }
       function savedLabel(text,error=false){
         const el=$('#mc-save-status');el.textContent=text;el.dataset.error=String(error);if(error)message(text);
@@ -81,7 +81,7 @@ function snapshot(){
           for(const c of colors){
             if(!Array.isArray(c)||!short(c[0],40)||!short(c[1],48)||!validHex(c[2])||ids.has(c[0]))throw Error('Повреждён цвет палитры.');
             ids.add(c[0]);
-            if(c[3]==='words'){if(!Object.hasOwn(words,c[4]))throw Error('Неизвестный запас цвета.');}
+            if(c[3]==='words'){if(!Object.hasOwn(words,c[4]))throw Error('Неизвестный запас цвета.');if(c[4]==='none'){c[3]='number';c[4]=null;c[5]=0;c[6]='exact';}}
             else if(c[3]==='number'){if(!Number.isInteger(c[5])||c[5]<0||c[5]>100000||!['exact','approx'].includes(c[6]))throw Error('Неверное количество деталей.');}
             else throw Error('Неизвестный способ подсчёта.');
           }
@@ -90,13 +90,17 @@ function snapshot(){
         for(const w of p.works){
           if(!short(w.id,80)||workIds.has(w.id)||!short(w.name,48)||!boards[w.board]||!['5','2.6'].includes(w.size)||(w.size==='2.6')!==(w.board==='mini'))throw Error('Повреждена схема.');
           workIds.add(w.id);
-          if(!Array.isArray(w.palette)||!w.palette.length||w.palette.length>128||!Array.isArray(w.base)||w.base.length!==boards[w.board].total||!Array.isArray(w.actions)||w.actions.length>100000)throw Error('Повреждены детали схемы.');
+          if(!Array.isArray(w.palette)||!w.palette.length||w.palette.length>256||!Array.isArray(w.base)||w.base.length!==boards[w.board].total||!Array.isArray(w.actions)||w.actions.length>100000)throw Error('Повреждены детали схемы.');
           for(const c of w.palette)if(!Array.isArray(c)||!short(c[0],40)||!short(c[1],48)||!validHex(c[2]))throw Error('Повреждён цвет схемы.');
           const index=v=>Number.isInteger(v)&&v>=-1&&v<w.palette.length;
           if(!w.base.every(index))throw Error('Неизвестные детали в схеме.');
           for(const a of w.actions){
-            if(!Array.isArray(a)||a.length!==3||(a[0]!==0&&a[0]!==1)||!Number.isInteger(a[1]))throw Error('Повреждены правки схемы.');
-            if(a[0]===0? a[1]<0||a[1]>=w.base.length||!index(a[2]):a[1]<0||a[1]>=w.palette.length||!index(a[2])||a[2]<0)throw Error('Повреждены правки схемы.');
+            if(!Array.isArray(a)||a.length!==3)throw Error('Повреждены правки схемы.');
+            if(a[0]===0){if(!Number.isInteger(a[1])||a[1]<0||a[1]>=w.base.length||!index(a[2]))throw Error('Повреждён шаг кисти.');}
+            else if(a[0]===1){if(!Number.isInteger(a[1])||a[1]<0||a[1]>=w.palette.length||!index(a[2])||a[2]<0)throw Error('Повреждена замена цвета.');}
+            else if(a[0]===2){if(a[2]!==0||!Array.isArray(a[1])||a[1].length>w.base.length||!a[1].every(pair=>Array.isArray(pair)&&pair.length===2&&Number.isInteger(pair[0])&&pair[0]>=0&&pair[0]<w.base.length&&index(pair[1])))throw Error('Повреждён штрих рисунка.');}
+            else if(a[0]===3){if(a[1]!==0||a[2]!==0)throw Error('Повреждена очистка рисунка.');}
+            else throw Error('Неизвестный шаг рисунка.');
           }
           if(!short(w.source,80))throw Error('Неизвестная картинка.');
           const g=w.generation;
@@ -111,17 +115,24 @@ function snapshot(){
         for(const w of p.works){const match=/^Творение ([1-9][0-9]{0,8})$/.exec(w.name);if(match)counter=Math.max(counter,Number(match[1]));}
         for(const w of [...p.works].reverse())if(/^(?:[a-f0-9]{12,64}|[a-f0-9]{8}-[a-f0-9-]{27,})$/i.test(w.name.replace(/\.[a-z0-9]{2,5}$/i,'')))w.name='Творение '+(++counter);
         p.creationCounter=counter;
-        p.screen=['more','home','search','setup','works','stock','result','materials','backup','help'].includes(p.screen)?p.screen:'home';
+        if(p.basicColors===undefined)p.basicColors=basicDefaults();
+        if(!Array.isArray(p.basicColors)||p.basicColors.length!==12||!p.basicColors.every(c=>c&&short(c.name,48)&&validHex(c.hex)))throw Error('Повреждены базовые цвета.');
+        const counters={};for(const size of ['5','2.6']){
+          let n=Number.isSafeInteger(p.colorCounters?.[size])&&p.colorCounters[size]>=0?p.colorCounters[size]:0;
+          for(const c of [...p.palettes[size],...p.works.filter(w=>w.size===size).flatMap(w=>w.palette)]){const match=/^C([0-9]+)$/.exec(c[0]);if(match&&Number.isSafeInteger(Number(match[1])))n=Math.max(n,Number(match[1]));}
+          counters[size]=n;
+        }p.colorCounters=counters;
+        p.screen=['draw','more','home','search','setup','works','stock','result','materials','backup','help'].includes(p.screen)?p.screen:'home';
         delete p.images;
-        if(!workIds.has(p.currentWork)){p.currentWork=p.works[0]?.id||null;if(['result','materials'].includes(p.screen))p.screen='home';}
+        if(!workIds.has(p.currentWork)){p.currentWork=p.works[0]?.id||null;if(['draw','result','materials'].includes(p.screen))p.screen='home';}
         return p;
       }
       function restore(p){
-        const originalNames=p.works?.map(w=>w.name).join('|'),originalCounter=p.creationCounter;
+        const originalNames=p.works?.map(w=>w.name).join('|'),originalCounter=p.creationCounter,originalPalette=JSON.stringify(p.palettes),originalBasics=JSON.stringify(p.basicColors),originalColorCounters=JSON.stringify(p.colorCounters);
         p=validateSnapshot(p);
-        migrationNeeded=originalNames!==p.works.map(w=>w.name).join('|')||originalCounter!==p.creationCounter;
+        migrationNeeded=originalNames!==p.works.map(w=>w.name).join('|')||originalCounter!==p.creationCounter||originalPalette!==JSON.stringify(p.palettes)||originalBasics!==JSON.stringify(p.basicColors)||originalColorCounters!==JSON.stringify(p.colorCounters);
         state={...state,...p,palettes:{'5':p.palettes['5'].map(unpackColor),'2.6':p.palettes['2.6'].map(unpackColor)},works:p.works.map(w=>({...w,palette:w.palette.map(a=>({id:a[0],name:a[1],hex:a[2]}))})),draft:null,stockReturn:null};
-        if(!art[state.source]&&!uploads.has(state.source))state.source='dog';
+        if(state.source!=='blank'&&!art[state.source]&&!uploads.has(state.source))state.source='dog';
         return true;
       }
       function imageFromBlob(blob){
@@ -138,12 +149,12 @@ function snapshot(){
       let restored=false;
 
       function message(text){$('#mf-global-message').hidden=!text;$('#mf-global-message').textContent=text||'';$('#mc-message-pop').hidden=!text;}
-      function sourceName(id){return art[id]?.name||(uploads.has(id)?'Твоя картинка':'Моя картинка');}
+      function sourceName(id){return id==='blank'?'Чистая основа':art[id]?.name||(uploads.has(id)?'Твоя картинка':'Моя картинка');}
       function nextCreationName(){state.creationCounter++;return 'Творение '+state.creationCounter;}
       function sourceCanvas(id){
         if(sourceCache.has(id))return sourceCache.get(id);
         const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
-        if(art[id]){const a=art[id];for(let y=0;y<16;y++)for(let x=0;x<16;x++){const v=a.rows[y][x];if(v!=='0'){g.fillStyle=a.colors[v];g.fillRect(x*16,y*16,16,16);}}}else if(uploads.has(id)){const img=uploads.get(id).image;c.width=Math.max(1,Math.round(img.width*Math.min(1,1024/Math.max(img.width,img.height))));c.height=Math.max(1,Math.round(img.height*Math.min(1,1024/Math.max(img.width,img.height))));c.getContext('2d').drawImage(img,0,0,c.width,c.height);}else return null;
+        if(id==='blank'){/* Transparent source for free drawing. */}else if(art[id]){const a=art[id];for(let y=0;y<16;y++)for(let x=0;x<16;x++){const v=a.rows[y][x];if(v!=='0'){g.fillStyle=a.colors[v];g.fillRect(x*16,y*16,16,16);}}}else if(uploads.has(id)){const img=uploads.get(id).image;c.width=Math.max(1,Math.round(img.width*Math.min(1,1024/Math.max(img.width,img.height))));c.height=Math.max(1,Math.round(img.height*Math.min(1,1024/Math.max(img.width,img.height))));c.getContext('2d').drawImage(img,0,0,c.width,c.height);}else return null;
         sourceCache.set(id,c);return c;
       }
       function drawSource(canvas,id){const src=sourceCanvas(id),g=canvas.getContext('2d');g.clearRect(0,0,canvas.width,canvas.height);if(!src)return;const scale=Math.min(canvas.width/src.width,canvas.height/src.height)*.9,w=src.width*scale,h=src.height*scale;g.imageSmoothingEnabled=false;g.drawImage(src,(canvas.width-w)/2,(canvas.height-h)/2,w,h);}
@@ -180,12 +191,12 @@ function snapshot(){
       }
       function buildWork(w){
         let cache=workCache.get(w.id);if(!cache&&w.base){cache={pins:points(w.board),base:w.base};workCache.set(w.id,cache);}if(!cache){const raw=quantize(w,w.palette.slice(0,w.baseLen),w.baseLen);cache={pins:raw.pins,base:raw.base.map(i=>i<0?-1:w.palette.findIndex(c=>c.id===raw.palette[i].id))};workCache.set(w.id,cache);}
-        const indices=cache.base.slice();for(const a of w.actions){if(a[0]===0){if(a[1]>=0&&a[1]<indices.length)indices[a[1]]=a[2];}else if(a[0]===1){for(let i=0;i<indices.length;i++)if(indices[i]===a[1])indices[i]=a[2];}}
+        const indices=cache.base.slice();for(const a of w.actions){if(a[0]===0){if(a[1]>=0&&a[1]<indices.length)indices[a[1]]=a[2];}else if(a[0]===1){for(let i=0;i<indices.length;i++)if(indices[i]===a[1])indices[i]=a[2];}else if(a[0]===2){for(const pair of a[1])indices[pair[0]]=pair[1];}else if(a[0]===3){indices.fill(-1);}}
         const counts=w.palette.map(()=>0);for(const i of indices)if(i>=0&&i<counts.length)counts[i]++;return{pins:cache.pins,indices,counts,total:counts.reduce((a,b)=>a+b,0)};
       }
-      function makeWork(source,size,board,name){if(state.works.length>=500)throw Error('В сундуке уже 500 схем. Скачай копию и освободи место.');const config={source,size,board,name:name||sourceName(source),fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite};const available=state.palettes[size].filter(isAvailable),limit=state.colorMode==='limited'?Math.min(state.k,available.length):available.length;
-        const q=quantize(config,available,limit);
-        if(q.base.every(i=>i<0))throw Error('Картинка получилась пустой. Попробуй отключить удаление светлого фона или выбери другую картинку.');if(!name&&!art[source])config.name=nextCreationName();const w={...config,id:'W'+Date.now()+Math.random().toString(36).slice(2,6),palette:q.palette.map(c=>({id:c.id,name:c.name,hex:c.hex})),baseLen:q.palette.length,base:q.base,actions:[],generation:{mode:state.colorMode,available:available.length,limit}};workCache.set(w.id,{pins:q.pins,base:q.base});state.works.unshift(w);return w;}
+      function makeWork(source,size,board,name){if(state.works.length>=500)throw Error('В сундуке уже 500 схем. Скачай копию и освободи место.');const config={source,size,board,name:name||sourceName(source),fit:state.fit,rotation:state.rotation,removeWhite:state.removeWhite};const available=state.palettes[size].filter(isAvailable),limit=source==='blank'?available.length:state.colorMode==='limited'?Math.min(state.k,available.length):available.length;
+        const q=source==='blank'?{palette:available.map(c=>({...c})),base:points(board).map(()=>-1),pins:points(board)}:quantize(config,available,limit);if(!available.length)throw Error('Сначала добавь свои цвета в наличии.');
+        if(source!=='blank'&&q.base.every(i=>i<0))throw Error('Картинка получилась пустой. Попробуй отключить удаление светлого фона или выбери другую картинку.');if(!name&&!art[source])config.name=nextCreationName();const w={...config,id:'W'+Date.now()+Math.random().toString(36).slice(2,6),palette:q.palette.map(c=>({id:c.id,name:c.name,hex:c.hex})),baseLen:q.palette.length,base:q.base,actions:[],generation:{mode:state.colorMode,available:available.length,limit}};workCache.set(w.id,{pins:q.pins,base:q.base});state.works.unshift(w);return w;}
       function drawWork(canvas,w,opts={}){
         const data=buildWork(w),g=canvas.getContext('2d'),size=canvas.width,holeColor=opts.background?'#ffffff':tone('--mf-bead-hole'),pegColor=tone('--mf-peg');g.clearRect(0,0,size,canvas.height);if(opts.background){g.fillStyle='#ffffff';g.fillRect(0,0,size,canvas.height);}const b=boards[w.board],span=size*.86,aspect=b.type==='hex'?Math.sqrt(3)/2:1,pitch=span/((b.n||29)-1),zoom=opts.zoom||1,panX=opts.panX||0,panY=opts.panY||0;g.save();g.translate(size/2+panX*size,size/2+panY*size);g.scale(zoom,zoom);const radius=pitch*.38;
         for(let i=0;i<data.pins.length;i++){const p=data.pins[i],x=(p.x-.5)*span*aspect,y=(p.y-.5)*span,index=data.indices[i];if(index<0){if(opts.pegs){g.fillStyle=pegColor;g.beginPath();g.arc(x,y,Math.max(.7,radius*.4),0,Math.PI*2);g.fill();}continue;}const mapped=opts.replace&&index===opts.replace.from?opts.replace.hex:w.palette[index]?.hex;if(!mapped)continue;g.fillStyle=mapped;g.beginPath();g.arc(x,y,radius,0,Math.PI*2);g.fill();if(opts.holes!==false){g.fillStyle=holeColor;g.beginPath();g.arc(x,y,radius*.28,0,Math.PI*2);g.fill();}}
@@ -193,7 +204,7 @@ function snapshot(){
       }
       function drawResult(){const w=current();if(!w)return;try{const d=drawWork($('#mf-result-canvas'),w,{pegs:true,zoom:viewport.zoom,panX:viewport.x,panY:viewport.y});$('#mf-result-name').textContent=w.name;$('#mc-work-name').value=w.name;$('#mf-result-info').textContent=(w.size==='5'?'5 мм':'2,6 мм')+' · '+boards[w.board].name+' · '+boards[w.board].total.toLocaleString('ru-RU')+' мест';$('#mf-result-count').textContent=d.total.toLocaleString('ru-RU')+' деталей · '+d.counts.filter(Boolean).length+' цветов';explainColors(w,d);$('#mf-zoom-label').textContent=viewport.zoom+'×';$('#mf-undo').disabled=!w.actions.length;$('#mf-redo').disabled=!(redoCache.get(w.id)||[]).length;}catch(e){message(e.message);go('works',false);}}
       function explainColors(w,data){
-        const used=data.counts.filter(Boolean).length,g=w.generation,el=$('#mc-color-explanation');
+        const used=data.counts.filter(Boolean).length,g=w.generation,el=$('#mc-color-explanation');if(w.source==='blank'){el.textContent='Свободный крафт: твой рисунок из своих деталей.';return;}
         if(!g){el.textContent='Использованы цвета, сохранённые в этой схеме. Для нового подбора скрафти картинку заново.';return;}
         if(w.actions.length){el.textContent='Сейчас на схеме '+used+' цветов. При создании было доступно '+g.available+'.';return;}
         if(g.mode==='limited'&&g.limit<g.available){el.textContent='Доступно '+g.available+' цветов. Ты выбрал не больше '+g.limit+'. Для более подробной схемы выбери «Все доступные».';return;}
@@ -201,11 +212,11 @@ function snapshot(){
       }
       function go(screen,remember=true){
         $('#mf-achievement').hidden=true;$('#mf-diamond-secret').hidden=true;
-        if(['result','materials','replace','export'].includes(screen)&&!current())screen='works';state.screen=screen;root.querySelector('.mf-app').dataset.view=screen;
+        if(['draw','result','materials','replace','export'].includes(screen)&&!current())screen='works';state.screen=screen;root.querySelector('.mf-app').dataset.view=screen;
         $$('[data-mf-screen]').forEach(p=>p.hidden=p.dataset.mfScreen!==screen);
-        const group=['stock','color','quantity'].includes(screen)?'stock':['works','result','materials','replace','export','backup'].includes(screen)?'works':'home';
+        const group=['stock','color','quantity'].includes(screen)?'stock':['draw','works','result','materials','replace','export','backup'].includes(screen)?'works':'home';
         $$('[data-mf-nav]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfNav===group));$('#mf-top-size').textContent=(['result','materials','replace','export'].includes(screen)?current()?.size:state.size)==='2.6'?'2,6 мм':'5 мм';
-        try{if(screen==='home')renderHome();if(screen==='search')renderSearch();if(screen==='setup')renderSetup();if(screen==='result'){drawResult();renderPaints();}if(screen==='materials')renderMaterials();if(screen==='replace')renderReplacement();if(screen==='works')renderWorks();if(screen==='stock'){renderStock();if(remember&&palette().some(c=>c.mode==='number'&&c.accuracy==='exact'&&c.count===64))award('stack','64 детали — целый стак!');}if(['color','quantity'].includes(screen))renderDraft();if(screen==='export')renderExport();}catch(e){message(e.message);}
+        try{if(screen==='home')renderHome();if(screen==='search')renderSearch();if(screen==='setup')renderSetup();if(screen==='result'){tool='view';drawResult();renderPaints();}if(screen==='draw')renderDrawing();if(screen==='materials')renderMaterials();if(screen==='replace')renderReplacement();if(screen==='works')renderWorks();if(screen==='stock'){renderStock();if(remember&&palette().some(c=>c.mode==='number'&&c.accuracy==='exact'&&c.count===64))award('stack','64 детали — целый стак!');}if(screen==='color')renderDraft();if(screen==='export')renderExport();}catch(e){message(e.message);}
         layout.show(screen);if(screen==='backup')storageInfo();if(remember)saveState();
       }
       function chooseSource(id){state.source=id;state.rotation=0;state.fit='contain';viewport={zoom:1,x:0,y:0};message('');go('setup');}
@@ -221,8 +232,10 @@ function snapshot(){
         $$('[data-mc-color-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mcColorMode===state.colorMode));$('#mf-settings').hidden=state.colorMode!=='limited';
         $('#mc-color-choice-hint').textContent=state.colorMode==='all'?'Учтём все цвета в наличии. На схеме останутся подходящие к картинке.':'Можно сделать схему проще, уменьшив число цветов.';
         $('#mf-generate').disabled=!active.length;
+        const free=state.source==='blank';$('#mf-generate').textContent=free?'Открыть чистую основу':'Скрафтить схему';$('#mf-prepare-toggle').hidden=free;
+        $('#mc-color-options').hidden=free;if(free)$('#mf-image-options').hidden=true;
       }
-      function openWork(w){state.currentWork=w.id;viewport={zoom:1,x:0,y:0};tool='view';paint=0;message('');go('result');}
+      function openWork(w){state.currentWork=w.id;viewport={zoom:1,x:0,y:0};tool='view';paint=0;message('');if(w.source==='blank')openDrawing();else go('result');}
       function renderWorks(){const grid=$('#mf-works-grid');grid.replaceChildren();for(const w of state.works){const b=button('', 'mf-work',()=>openWork(w)),c=node('canvas');c.width=c.height=256;c.setAttribute('aria-hidden','true');let text='';try{const d=drawWork(c,w);text=d.total.toLocaleString('ru-RU')+' деталей';}catch{text='Выбери фото заново';}b.append(c,node('strong','',w.name),node('span','',(w.size==='5'?'5 мм':'2,6 мм')+' · '+boards[w.board].name),node('span','',text));grid.append(b);}if(!state.works.length)grid.append(node('p','mf-small','Здесь появятся твои схемы.'));}
       function renderPaints(){const w=current(),box=$('#mf-paints');box.replaceChildren();if(!w)return;w.palette.forEach((c,i)=>{const b=button('', '',()=>{paint=i;tool='paint';renderPaints();syncTools();});b.setAttribute('aria-label',c.name);b.setAttribute('aria-pressed',paint===i&&tool==='paint');const sw=node('span');sw.style.setProperty('--mf-pigment',c.hex);b.append(sw);box.append(b);});syncTools();}
       function syncTools(){$$('[data-mf-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfTool===tool));}
@@ -236,9 +249,213 @@ function snapshot(){
       function hexOf(d){if(d.original&&!d.changed)return d.original;const s=d.s/100,l=d.l/100,a=s*Math.min(l,1-l),f=n=>{const k=(n+d.h/30)%12;return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1)))).toString(16).padStart(2,'0');};return'#'+f(0)+f(8)+f(4);}
       function hslOf(hex){const v=rgb(hex).map(n=>n/255),max=Math.max(...v),min=Math.min(...v),d=max-min,l=(max+min)/2;let h=0,s=d===0?0:d/(1-Math.abs(2*l-1));if(d){if(max===v[0])h=60*(((v[1]-v[2])/d)%6);else if(max===v[1])h=60*((v[2]-v[0])/d+2);else h=60*((v[0]-v[1])/d+4);}return{h:Math.round((h+360)%360),s:Math.round(s*100),l:Math.round(l*100)};}
       function colorName(d){if(d.s<8)return d.l>88?'Белый':d.l<22?'Чёрный':'Серый';const h=d.h;if(h<18||h>=345)return'Красный';if(h<45)return d.l<45?'Коричневый':'Оранжевый';if(h<70)return'Жёлтый';if(h<160)return'Зелёный';if(h<195)return'Бирюзовый';if(h<255)return'Синий';if(h<295)return'Фиолетовый';return'Розовый';}
-      function newColor(){message('');state.draft={h:205,s:70,l:65,mode:'words',word:null,count:'',accuracy:'exact',id:null,name:null,changed:true};$('#mf-quantity-error').textContent='';go('color');}
-      function editColor(c){message('');state.draft={...hslOf(c.hex),mode:c.mode,word:c.word,count:c.count??'',accuracy:c.accuracy,id:c.id,name:c.name,original:c.hex,changed:false};$('#mf-quantity-error').textContent='';go('quantity');}
-      function renderDraft(){if(!state.draft){newColor();return;}const d=state.draft,hex=hexOf(d);$('#mf-color-bead').style.setProperty('--mf-pigment',hex);$('#mf-quantity-bead').style.setProperty('--mf-pigment',hex);$('#mf-hue').value=d.h;$('#mf-light').value=d.l;$('#mf-saturation').value=d.s;$('#mf-light').style.setProperty('--mf-track',`linear-gradient(90deg,#101014,hsl(${d.h} ${d.s}% 50%),#fff)`);$('#mf-saturation').style.setProperty('--mf-track',`linear-gradient(90deg,hsl(${d.h} 0% ${d.l}%),hsl(${d.h} 100% ${d.l}%))`);$('#mf-quantity-name').textContent=d.name&&!d.changed?d.name:colorName(d);$$('[data-mf-quantity-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfQuantityMode===d.mode));$$('[data-mf-word]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfWord===d.word));$$('[data-mf-accuracy]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfAccuracy===d.accuracy));$('#mf-quantity-words').hidden=d.mode!=='words';$('#mf-quantity-number').hidden=d.mode!=='number';$('#mf-stock-number').value=d.count;}
+      function basicDefaults(){return [['Белый','#f4f2e9'],['Чёрный','#292e34'],['Серый','#919ba1'],['Красный','#cf483c'],['Оранжевый','#ef963e'],['Жёлтый','#f1ce3c'],['Зелёный','#4aa875'],['Салатовый','#91c75b'],['Бирюза','#3ebdbd'],['Голубой','#65b9e9'],['Синий','#386eb5'],['Коричневый','#7b4d30']].map(([name,hex])=>({name,hex}));}
+      let basicEdit=null,pickerImage=null,pickerRect=null,pickedHex=null,pendingDelete=null;
+      function colorInk(hex){const [r,g,b]=rgb(hex).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4;});return .2126*r+.7152*g+.0722*b>.179?'#000000':'#ffffff';}
+      function applyDraftHex(hex,name){Object.assign(state.draft,hslOf(hex),{original:hex,changed:false,name:name||colorName(hslOf(hex))});renderDraft();}
+      function nextColorId(){
+        let id;do{id='C'+String(++state.colorCounters[state.size]).padStart(2,'0');}while(palette().some(c=>c.id===id));return id;
+      }
+      function newColor(){message('');basicEdit=null;state.draft={h:205,s:70,l:65,mode:'words',word:null,count:'',accuracy:'exact',id:null,name:null,changed:true};$('#mf-quantity-error').textContent='';go('color');}
+      function editColor(c){message('');basicEdit=null;state.draft={...hslOf(c.hex),mode:c.word==='none'?'number':c.mode,word:c.word,count:c.word==='none'?0:c.count??'',accuracy:c.accuracy||'exact',id:c.id,name:c.name,original:c.hex,changed:false};$('#mf-quantity-error').textContent='';go('color');}
+      function renderDraft(){
+        if(!state.draft){newColor();return;}
+        const d=state.draft,hex=hexOf(d),name=d.name&&!d.changed?d.name:colorName(d);
+        for(const id of ['#mf-color-bead','#mc-shade-bead'])$(id).style.setProperty('--mf-pigment',hex);
+        $('#mc-color-title').textContent=basicEdit?'Базовые цвета':d.id?'Изменить цвет':'Добавить цвет';
+        $('#mc-color-caption').textContent=basicEdit?'Плашка '+(basicEdit.index+1)+' · '+name:name;
+        $('#mc-edit-basics').textContent=basicEdit?'Готово':'✎';$('#mc-edit-basics').setAttribute('aria-label',basicEdit?'Закончить настройку базовых цветов':'Редактировать базовую сетку');
+        $('#mc-color-form').classList.toggle('mc-editing-basics',!!basicEdit);
+        $('#mf-save-color').textContent=basicEdit?'Сохранить плашку':'Сохранить цвет';
+        $('#mc-delete-color').hidden=!!basicEdit;$('#mc-color-quantity').hidden=!!basicEdit;
+        $('#mf-hue').value=d.h;$('#mf-light').value=d.l;$('#mf-saturation').value=d.s;
+        $('#mf-light').style.setProperty('--mf-track','linear-gradient(90deg,#101014,hsl('+d.h+' '+d.s+'% 50%),#fff)');
+        $('#mf-saturation').style.setProperty('--mf-track','linear-gradient(90deg,hsl('+d.h+' 0% '+d.l+'%),hsl('+d.h+' 100% '+d.l+'%))');
+        const grid=$('#mc-basic-grid');grid.replaceChildren();
+        state.basicColors.forEach((c,i)=>{
+          const b=button(c.name,'mc-basic-color',()=>{if(basicEdit)basicEdit.index=i;applyDraftHex(c.hex,c.name);});
+          b.style.backgroundColor=c.hex;b.style.color=colorInk(c.hex);
+          b.setAttribute('aria-label',(basicEdit?'Изменить плашку ':'Выбрать цвет ')+c.name);
+          b.setAttribute('aria-pressed',basicEdit?basicEdit.index===i:hex.toLowerCase()===c.hex.toLowerCase());
+          grid.append(b);
+        });
+        $$('[data-mf-word]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfWord===d.word&&d.mode==='words'));
+        $('#mf-quantity-words').hidden=d.mode!=='words';$('#mf-quantity-number').hidden=d.mode!=='number';
+        $('#mf-stock-number').value=d.count;$('#mc-accuracy-select').value=d.accuracy;
+      }
+      async function saveDraft(){
+        const d=state.draft;if(!d)return;
+        if(basicEdit){
+          state.basicColors[basicEdit.index]={name:d.name&&!d.changed?d.name:colorName(d),hex:hexOf(d)};
+          const slot=basicEdit.index;if(await saveState()){if(basicEdit&&basicEdit.index===slot){renderDraft();$('#mc-color-caption').textContent='Плашка '+(slot+1)+' сохранена';}}
+          return;
+        }
+        const n=Number(d.count);
+        const error=d.mode==='words'&&!['many','medium','few'].includes(d.word)?'Укажи запас: много, средне или мало.':
+          d.mode==='number'&&(d.count===''||!Number.isInteger(n)||n<0||n>100000)?'Введи целое число от 0 до 100 000.':
+          !d.id&&palette().length>=64?'В палитре уже 64 цвета. Удали ненужный цвет.':null;
+        if(error){$('#mf-quantity-error').textContent=error;message(error);return;}
+        const c={id:d.id||nextColorId(),name:d.name&&!d.changed?d.name:colorName(d),hex:hexOf(d),mode:d.mode,word:d.mode==='words'?d.word:null,count:d.mode==='number'?n:null,accuracy:d.accuracy};
+        if(d.id){const i=palette().findIndex(x=>x.id===d.id);if(i<0){message('Цвет уже удалён. Добавь его заново.');return;}palette()[i]=c;}else palette().push(c);
+        state.stockSelected=c.id;state.stockFilter='all';state.stockPage=Math.floor(palette().findIndex(x=>x.id===c.id)/layout.stockSize());state.draft=null;go('stock');if(await saveState())message('Цвет и запас сохранены.');
+      }
+      function askDeleteColor(id){
+        if(!id){state.draft=null;basicEdit=null;go('stock');return;}
+        const c=palette().find(x=>x.id===id);if(!c)return;
+        pendingDelete={id,size:state.size};$('#mc-delete-preview').style.setProperty('--mf-pigment',c.hex);$('#mc-delete-name').textContent=c.name;$('#mc-delete-dialog').hidden=false;
+      }
+      async function deleteColor(){
+        const deletion=pendingDelete;if(!deletion)return;pendingDelete=null;$('#mc-delete-dialog').hidden=true;
+        const list=state.palettes[deletion.size],index=list.findIndex(c=>c.id===deletion.id);if(index<0)return;
+        list.splice(index,1);state.draft=null;basicEdit=null;state.stockSelected=list[Math.min(index,list.length-1)]?.id||null;state.stockFilter='all';state.stockPage=0;go('stock');
+        if(await saveState())message('Цвет удалён из запасов. Сохранённые схемы остались на месте.');
+      }
+      function renderPicker(){
+        const canvas=$('#mc-pipette-canvas');canvas.width=Math.max(1,Math.round(canvas.clientWidth*2));canvas.height=Math.max(1,Math.round(canvas.clientHeight*2));const g=canvas.getContext('2d');g.clearRect(0,0,canvas.width,canvas.height);g.fillStyle='#ffffff';g.fillRect(0,0,canvas.width,canvas.height);pickerRect=null;
+        if(!pickerImage)return;
+        const scale=Math.min(canvas.width/pickerImage.width,canvas.height/pickerImage.height),w=pickerImage.width*scale,h=pickerImage.height*scale,x=(canvas.width-w)/2,y=(canvas.height-h)/2;
+        g.imageSmoothingEnabled=false;g.drawImage(pickerImage,x,y,w,h);pickerRect={x,y,w,h};
+      }
+      function openPipette(){
+        pickedHex=null;$('#mc-use-picked').disabled=true;$('#mc-picked-name').textContent='Нажми на цвет картинки';
+        if(state.source!=='blank')pickerImage=sourceCanvas(state.source);else if(!pickerImage){const last=[...uploads.keys()].at(-1);if(last)pickerImage=sourceCanvas(last);}
+        $('#mc-pipette-dialog').hidden=false;renderPicker();
+      }
+      function pickPhotoColor(event){
+        if(!pickerImage||!pickerRect)return;
+        const canvas=$('#mc-pipette-canvas'),b=canvas.getBoundingClientRect(),x=(event.clientX-b.left)*canvas.width/b.width,y=(event.clientY-b.top)*canvas.height/b.height,r=pickerRect;
+        if(x<r.x||x>=r.x+r.w||y<r.y||y>=r.y+r.h)return;
+        const sample=document.createElement('canvas');sample.width=pickerImage.width;sample.height=pickerImage.height;const g=sample.getContext('2d',{willReadFrequently:true});g.drawImage(pickerImage,0,0);
+        const sx=Math.min(sample.width-1,Math.max(0,Math.floor((x-r.x)/r.w*sample.width))),sy=Math.min(sample.height-1,Math.max(0,Math.floor((y-r.y)/r.h*sample.height))),rgba=g.getImageData(sx,sy,1,1).data;
+        if(rgba[3]<32){$('#mc-picked-name').textContent='Здесь пусто. Нажми на рисунок.';pickedHex=null;$('#mc-use-picked').disabled=true;return;}
+        const alpha=rgba[3]/255;pickedHex='#'+[0,1,2].map(i=>Math.round(rgba[i]*alpha+255*(1-alpha)).toString(16).padStart(2,'0')).join('');
+        $('#mc-picked-preview').style.setProperty('--mf-pigment',pickedHex);$('#mc-picked-name').textContent=colorName(hslOf(pickedHex));$('#mc-use-picked').disabled=false;
+        renderPicker();const ctx=canvas.getContext('2d');ctx.strokeStyle='#17333d';ctx.lineWidth=3;ctx.strokeRect(x-9,y-9,18,18);ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(x-10,y-10,20,20);
+      }
+      function bindPalette(){
+        $('#mf-add-color').addEventListener('click',newColor);
+        $('#mf-stock-edit').addEventListener('click',()=>{const c=palette().find(x=>x.id===state.stockSelected);if(c)editColor(c);});
+        $('#mc-color-back').addEventListener('click',()=>{state.draft=null;basicEdit=null;go('stock');});
+        $('#mc-edit-basics').addEventListener('click',()=>{
+          if(basicEdit){state.draft=basicEdit.original;basicEdit=null;renderDraft();}
+          else {basicEdit={index:0,original:structuredClone(state.draft)};applyDraftHex(state.basicColors[0].hex,state.basicColors[0].name);}
+        });
+        $('#mf-hue').addEventListener('input',()=>{const d=state.draft;d.changed=true;d.h=+$('#mf-hue').value;if(d.s<8){d.s=70;d.l=65;}renderDraft();});
+        $('#mf-light').addEventListener('input',()=>{state.draft.changed=true;state.draft.l=+$('#mf-light').value;renderDraft();});
+        $('#mf-saturation').addEventListener('input',()=>{state.draft.changed=true;state.draft.s=+$('#mf-saturation').value;renderDraft();});
+        $('#mf-shade-toggle').addEventListener('click',()=>{$('#mf-shade-options').hidden=false;renderDraft();});
+        $('#mc-shade-done').addEventListener('click',()=>{$('#mf-shade-options').hidden=true;});
+        $$('[data-mf-quantity-mode]').forEach(b=>b.addEventListener('click',()=>{state.draft.mode=b.dataset.mfQuantityMode;renderDraft();}));
+        $$('[data-mf-word]').forEach(b=>b.addEventListener('click',()=>{state.draft.mode='words';state.draft.word=b.dataset.mfWord;renderDraft();}));
+        $('#mf-stock-number').addEventListener('input',()=>{state.draft.count=$('#mf-stock-number').value;});
+        $('#mc-accuracy-select').addEventListener('change',()=>{state.draft.accuracy=$('#mc-accuracy-select').value;});
+        $('#mf-save-color').addEventListener('click',saveDraft);
+        $('#mc-delete-color').addEventListener('click',()=>askDeleteColor(state.draft?.id));
+        $('#mc-delete-selected').addEventListener('click',()=>askDeleteColor(state.stockSelected));
+        $('#mc-delete-confirm').addEventListener('click',deleteColor);$('#mc-delete-cancel').addEventListener('click',()=>{$('#mc-delete-dialog').hidden=true;pendingDelete=null;});
+        $('#mc-open-pipette').addEventListener('click',openPipette);
+        $('#mc-pipette-close').addEventListener('click',()=>{$('#mc-pipette-dialog').hidden=true;});
+        $('#mc-pipette-upload').addEventListener('click',()=>$('#mc-color-photo-file').click());
+        $('#mc-pipette-canvas').addEventListener('pointerup',pickPhotoColor);
+        window.addEventListener('resize',()=>{if(!$('#mc-pipette-dialog').hidden)renderPicker();});
+        document.addEventListener('keydown',event=>{
+          const modal=$$('.mc-palette-modal').find(n=>!n.hidden);if(!modal)return;
+          if(event.key==='Escape'){modal.hidden=true;pendingDelete=null;return;}
+          if(event.key==='Tab'){
+            const controls=[...modal.querySelectorAll('button:not(:disabled),input,select')].filter(n=>n.getClientRects().length);
+            if(!controls.length)return;const index=controls.indexOf(document.activeElement);
+            if(index<0||(event.shiftKey&&index===0)||(!event.shiftKey&&index===controls.length-1)){event.preventDefault();controls[event.shiftKey?controls.length-1:0].focus();}
+          }
+        });
+        $('#mc-use-picked').addEventListener('click',()=>{if(pickedHex){applyDraftHex(pickedHex);$('#mc-pipette-dialog').hidden=true;}});
+        $('#mc-color-photo-file').addEventListener('change',async()=>{
+          const file=$('#mc-color-photo-file').files[0];$('#mc-color-photo-file').value='';if(!file)return;
+          try{
+            if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>20*1024*1024)throw Error('Выбери PNG, JPEG или WebP размером до 20 МБ.');
+            const image=await imageFromBlob(file);if(image.width*image.height>32000000)throw Error('Выбери картинку меньшего размера.');
+            const c=document.createElement('canvas'),scale=Math.min(1,1024/Math.max(image.width,image.height));c.width=Math.max(1,Math.round(image.width*scale));c.height=Math.max(1,Math.round(image.height*scale));c.getContext('2d').drawImage(image,0,0,c.width,c.height);
+            pickerImage=c;pickedHex=null;$('#mc-use-picked').disabled=true;$('#mc-picked-name').textContent='Нажми на нужный цвет';renderPicker();
+          }catch(error){message(error.message||'Не удалось открыть картинку.');}
+        });
+      }
+
+      let brushPage=0,drawGesture=null;
+      function drawingPalette(w){
+        const list=state.palettes[w.size].filter(isAvailable);
+        for(const c of list)if(!w.palette.some(p=>p.id===c.id&&p.hex===c.hex)&&w.palette.length<256)w.palette.push({id:c.id,name:c.name,hex:c.hex});
+        return list.map(c=>({c,index:w.palette.findIndex(p=>p.id===c.id&&p.hex===c.hex)})).filter(x=>x.index>=0);
+      }
+      function openDrawing(){const w=current();if(!w)return;tool='paint';brushPage=0;const colors=drawingPalette(w);if(colors.length)paint=colors[0].index;go('draw');}
+      function renderDrawing(){
+        const w=current();if(!w)return;
+        const drawing=drawWork($('#mc-draw-canvas'),w,{pegs:true,zoom:viewport.zoom,panX:viewport.x,panY:viewport.y});
+        $('#mc-draw-name').textContent=w.name;$('#mc-draw-zoom').textContent=viewport.zoom+'× · '+drawing.total+' деталей';
+        $$('[data-mc-draw-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mcDrawTool===tool));
+        const list=drawingPalette(w),box=$('#mc-draw-colors'),width=box.clientWidth||280,slots=Math.max(4,Math.min(12,Math.floor((width-96)/48))),pages=Math.max(1,Math.ceil(list.length/slots));
+        brushPage=Math.max(0,Math.min(brushPage,pages-1));box.replaceChildren();
+        const previous=button('‹','',()=>{brushPage--;renderDrawing();});previous.setAttribute('aria-label','Предыдущие цвета');previous.disabled=brushPage===0;box.append(previous);
+        for(const item of list.slice(brushPage*slots,brushPage*slots+slots)){
+          const b=button(paint===item.index?'✓':'','mc-brush-color',()=>{paint=item.index;tool='paint';renderDrawing();});
+          b.style.backgroundColor=item.c.hex;b.style.color=colorInk(item.c.hex);b.setAttribute('aria-label',item.c.name);b.setAttribute('aria-pressed',paint===item.index&&tool==='paint');b.dataset.paintIndex=item.index;box.append(b);
+        }
+        const next=button('›','',()=>{brushPage++;renderDrawing();});next.setAttribute('aria-label','Следующие цвета');next.disabled=brushPage===pages-1;box.append(next);
+        $('#mc-draw-undo').disabled=!w.actions.length;$('#mc-draw-redo').disabled=!(redoCache.get(w.id)||[]).length;
+        $('#mc-draw-status').textContent=list.length?((list.find(x=>x.index===paint)?.c.name||'Кисть')+' · цвета '+(brushPage+1)+' / '+pages):'Добавь цвет в наличии в «Мои цвета».';
+        $$('[data-mc-draw-tool="paint"]').forEach(b=>b.disabled=!list.length);
+      }
+      function pinAt(canvas,w,cx,cy){
+        const r=canvas.getBoundingClientRect(),x=(cx-r.left)/r.width,y=(cy-r.top)/r.height,b=boards[w.board],span=.86,aspect=b.type==='hex'?Math.sqrt(3)/2:1;
+        const nx=.5+(x-.5-viewport.x)/(span*aspect*viewport.zoom),ny=.5+(y-.5-viewport.y)/(span*viewport.zoom),pins=points(w.board);
+        let best=-1,distance=Infinity;
+        if(b.type==='square'){
+          const column=Math.round(nx*(b.n-1)),row=Math.round(ny*(b.n-1));if(column<0||column>=b.n||row<0||row>=b.n)return-1;
+          best=row*b.n+column;distance=((pins[best].x-nx)*aspect)**2+(pins[best].y-ny)**2;
+        }else for(let i=0;i<pins.length;i++){const d=((pins[i].x-nx)*aspect)**2+(pins[i].y-ny)**2;if(d<distance){distance=d;best=i;}}
+        return distance<=(.62/((b.n||29)-1))**2?best:-1;
+      }
+      function strokePoint(event){
+        const w=current(),gesture=drawGesture;if(!w||!gesture||tool==='view')return;
+        const canvas=$('#mc-draw-canvas'),box=canvas.getBoundingClientRect(),pitch=box.width*.86/((boards[w.board].n||29)-1)*viewport.zoom,steps=Math.max(1,Math.ceil(Math.hypot(event.clientX-gesture.lastX,event.clientY-gesture.lastY)/Math.max(1,pitch*.3)));
+        for(let step=1;step<=Math.min(500,steps);step++){
+          const t=step/Math.min(500,steps),i=pinAt(canvas,w,gesture.lastX+(event.clientX-gesture.lastX)*t,gesture.lastY+(event.clientY-gesture.lastY)*t);
+          if(i<0||gesture.visited.has(i))continue;gesture.visited.add(i);
+          const color=tool==='erase'?-1:paint;if(tool==='paint'&&!drawingPalette(w).some(x=>x.index===paint))continue;
+          if(buildWork(w).indices[i]===color)continue;
+          if(!gesture.action){gesture.action=[2,[],0];w.actions.push(gesture.action);redoCache.set(w.id,[]);}
+          gesture.action[1].push([i,color]);
+        }
+        gesture.lastX=event.clientX;gesture.lastY=event.clientY;renderDrawing();
+      }
+      function finishDrawing(){if(!drawGesture)return;const changed=!!drawGesture.action;drawGesture=null;if(changed)saveState();renderDrawing();}
+      function historyStep(forward){
+        finishDrawing();const w=current();if(!w)return;const redo=redoCache.get(w.id)||[];
+        if(forward){if(redo.length)w.actions.push(redo.pop());}else if(w.actions.length)redo.push(w.actions.pop());
+        redoCache.set(w.id,redo);renderDrawing();saveState();
+      }
+      function bindDrawing(){
+        $('#mc-free-create').addEventListener('click',()=>chooseSource('blank'));
+        $('#mc-draw-back').addEventListener('click',()=>{finishDrawing();go('result');});
+        $('#mc-draw-done').addEventListener('click',()=>{finishDrawing();go('result');});
+        $('#mc-draw-undo').addEventListener('click',()=>historyStep(false));$('#mc-draw-redo').addEventListener('click',()=>historyStep(true));
+        $('#mc-draw-clear').addEventListener('click',()=>{finishDrawing();const w=current();if(!w||!buildWork(w).total)return;w.actions.push([3,0,0]);redoCache.set(w.id,[]);renderDrawing();$('#mc-draw-status').textContent='Макс, чистый холст! Вернуть рисунок можно шагом назад.';saveState();});
+        $$('[data-mc-draw-tool]').forEach(b=>b.addEventListener('click',()=>{finishDrawing();tool=b.dataset.mcDrawTool;renderDrawing();}));
+        $('#mc-draw-minus').addEventListener('click',()=>{finishDrawing();viewport.zoom=Math.max(1,viewport.zoom/2);if(viewport.zoom===1){viewport.x=0;viewport.y=0;}renderDrawing();});
+        $('#mc-draw-plus').addEventListener('click',()=>{finishDrawing();viewport.zoom=Math.min(16,viewport.zoom*2);renderDrawing();});
+        const canvas=$('#mc-draw-canvas');
+        canvas.addEventListener('pointerdown',event=>{
+          if(drawGesture)return;event.preventDefault();drawGesture={pointer:event.pointerId,lastX:event.clientX,lastY:event.clientY,startX:event.clientX,startY:event.clientY,panX:viewport.x,panY:viewport.y,visited:new Set(),action:null};
+          try{canvas.setPointerCapture(event.pointerId);}catch{};if(tool!=='view')strokePoint(event);
+        });
+        canvas.addEventListener('pointermove',event=>{
+          if(!drawGesture||event.pointerId!==drawGesture.pointer)return;
+          if(tool==='view'){const r=canvas.getBoundingClientRect();viewport.x=Math.max(-3,Math.min(3,drawGesture.panX+(event.clientX-drawGesture.startX)/r.width));viewport.y=Math.max(-3,Math.min(3,drawGesture.panY+(event.clientY-drawGesture.startY)/r.height));renderDrawing();}
+          else strokePoint(event);
+        });
+        canvas.addEventListener('pointerup',event=>{if(drawGesture&&event.pointerId===drawGesture.pointer)finishDrawing();});
+        canvas.addEventListener('pointercancel',finishDrawing);
+        window.addEventListener('resize',()=>{if(state.screen==='draw')renderDrawing();});
+      }
+
       function renderExport(){const w=current(),d=buildWork(w),canvas=$('#mf-export-canvas');const image=document.createElement('canvas');image.width=image.height=960;drawWork(image,w,{background:true,holes:exportMode==='pattern',pegs:exportMode==='pattern'});const rows=d.counts.map((count,i)=>({count,c:w.palette[i]})).filter(r=>r.count);canvas.width=960;canvas.height=exportMode==='pattern'?1060+rows.length*42:960;const g=canvas.getContext('2d');g.fillStyle='#ffffff';g.fillRect(0,0,canvas.width,canvas.height);g.drawImage(image,0,0);if(exportMode==='pattern'){g.fillStyle='#20364a';g.font='bold 30px Arial';g.fillText(w.name+' · '+(w.size==='5'?'5 мм':'2,6 мм'),35,1005);g.font='24px Arial';rows.forEach((r,i)=>{g.fillStyle=r.c.hex;g.fillRect(35,1030+i*42,25,25);g.fillStyle='#20364a';g.fillText(r.c.name+' — '+r.count+' шт.',75,1052+i*42);});}$$('[data-mf-export]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mfExport===exportMode));}
       const layout=MosaicLayout.mount(root,{stockChanged:()=>{if(state.screen==='stock')renderStock();}});
       $('#mc-more').addEventListener('click',()=>go('more'));
@@ -271,13 +488,13 @@ function snapshot(){
         $('#mf-search-results').hidden=false;renderExamples($('#mf-search-examples'),['creeper','pickaxe','dog']);saveState();
       });
       function toggle(buttonId,panelId){const b=$(buttonId),p=$(panelId);p.hidden=!p.hidden;b.setAttribute('aria-expanded',!p.hidden);layout.refresh(p.hidden?b:p);}
-      $('#mf-prepare-toggle').addEventListener('click',()=>toggle('#mf-prepare-toggle','#mf-image-options'));$('#mf-shade-toggle').addEventListener('click',()=>toggle('#mf-shade-toggle','#mf-shade-options'));$('#mf-edit-toggle').addEventListener('click',()=>toggle('#mf-edit-toggle','#mf-edit-tools'));
+      $('#mf-prepare-toggle').addEventListener('click',()=>toggle('#mf-prepare-toggle','#mf-image-options'));$('#mf-edit-toggle').addEventListener('click',openDrawing);
       $$('[data-mf-fit]').forEach(b=>b.addEventListener('click',()=>{state.fit=b.dataset.mfFit;renderSetup();saveState();}));$('#mf-rotate').addEventListener('click',()=>{state.rotation=(state.rotation+90)%360;renderSetup();saveState();});$('#mf-white-bg').addEventListener('change',()=>{state.removeWhite=$('#mf-white-bg').checked;renderSetup();saveState();});
       $$('[data-mf-size]').forEach(b=>b.addEventListener('click',()=>{state.size=b.dataset.mfSize;state.board=state.size==='2.6'?'mini':'square';$('#mf-top-size').textContent=state.size==='5'?'5 мм':'2,6 мм';renderSetup();saveState();}));
       $$('[data-mc-color-mode]').forEach(b=>b.addEventListener('click',()=>{state.colorMode=b.dataset.mcColorMode;renderSetup();saveState();}));
       $('#mf-color-limit').addEventListener('input',()=>{state.k=+$('#mf-color-limit').value;$('#mf-color-limit-label').textContent=state.k;});$('#mf-color-limit').addEventListener('change',saveState);
       $('#mf-setup-palette').addEventListener('click',()=>{state.stockReturn='setup';state.stockFilter='all';go('stock');});$('#mf-stock-back').addEventListener('click',()=>{const destination=state.stockReturn||'home';state.stockReturn=null;go(destination);});$('#mf-stock-size-toggle').addEventListener('click',()=>toggle('#mf-stock-size-toggle','#mf-stock-size-options'));
-      $('#mf-generate').addEventListener('click',async()=>{const b=$('#mf-generate');b.disabled=true;b.textContent='Крафтим…';$('#mf-generate-error').textContent='';try{await new Promise(resolve=>setTimeout(resolve,35));const w=makeWork(state.source,state.size,state.board);openWork(w);award('craft','Макс, да будет крафт!');saveState();}catch(e){$('#mf-generate-error').textContent=e.message;}finally{b.textContent='Скрафтить схему';b.disabled=!availablePalette().length;}});
+      $('#mf-generate').addEventListener('click',async()=>{const b=$('#mf-generate');b.disabled=true;b.textContent='Крафтим…';$('#mf-generate-error').textContent='';try{await new Promise(resolve=>setTimeout(resolve,35));const w=makeWork(state.source,state.size,state.board);openWork(w);award('craft','Макс, да будет крафт!');saveState();}catch(e){$('#mf-generate-error').textContent=e.message;}finally{b.textContent=state.source==='blank'?'Открыть чистую основу':'Скрафтить схему';b.disabled=!availablePalette().length;}});
       $('#mf-open-materials').addEventListener('click',()=>go('materials'));$('#mf-export').addEventListener('click',()=>{exportMode='picture';go('export');});$$('[data-mf-export]').forEach(b=>b.addEventListener('click',()=>{exportMode=b.dataset.mfExport;renderExport();}));
       $('#mf-zoom-in').addEventListener('click',()=>{viewport.zoom=Math.min(8,viewport.zoom*2);drawResult();});$('#mf-zoom-out').addEventListener('click',()=>{viewport.zoom=Math.max(1,viewport.zoom/2);if(viewport.zoom===1){viewport.x=0;viewport.y=0;}drawResult();});
       $$('[data-mf-tool]').forEach(b=>b.addEventListener('click',()=>{tool=b.dataset.mfTool;renderPaints();}));
@@ -285,17 +502,13 @@ function snapshot(){
       resultCanvas.addEventListener('pointerdown',e=>{gesture={x:e.clientX,y:e.clientY,panX:viewport.x,panY:viewport.y,moved:false};try{resultCanvas.setPointerCapture(e.pointerId);}catch{};});
       resultCanvas.addEventListener('pointermove',e=>{if(!gesture)return;const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;if(Math.abs(dx)+Math.abs(dy)>6)gesture.moved=true;if(tool==='view'&&gesture.moved&&viewport.zoom>1){const r=resultCanvas.getBoundingClientRect();viewport.x=Math.max(-3,Math.min(3,gesture.panX+dx/r.width));viewport.y=Math.max(-3,Math.min(3,gesture.panY+dy/r.height));drawResult();}});
       resultCanvas.addEventListener('pointercancel',()=>{gesture=null;});
-      resultCanvas.addEventListener('pointerup',e=>{const g=gesture;gesture=null;if(!g||g.moved||tool==='view')return;const w=current();if(!w)return;const d=buildWork(w),r=resultCanvas.getBoundingClientRect(),cx=(e.clientX-r.left)/r.width*resultCanvas.width,cy=(e.clientY-r.top)/r.height*resultCanvas.height,size=resultCanvas.width,span=size*.86,b=boards[w.board],aspect=b.type==='hex'?Math.sqrt(3)/2:1;let best=-1,distance=Infinity;for(let i=0;i<d.pins.length;i++){const p=d.pins[i],x=size/2+viewport.x*size+(p.x-.5)*span*aspect*viewport.zoom,y=size/2+viewport.y*size+(p.y-.5)*span*viewport.zoom,delta=(x-cx)**2+(y-cy)**2;if(delta<distance){distance=delta;best=i;}}if(best<0||distance>(span/((b.n||29)-1)*viewport.zoom*.6)**2)return;w.actions.push([0,best,tool==='erase'?-1:paint]);redoCache.set(w.id,[]);drawResult();saveState();});
+      resultCanvas.addEventListener('pointerup',e=>{const g=gesture;gesture=null;if(state.screen!=='draw'||!g||g.moved||tool==='view')return;const w=current();if(!w)return;const d=buildWork(w),r=resultCanvas.getBoundingClientRect(),cx=(e.clientX-r.left)/r.width*resultCanvas.width,cy=(e.clientY-r.top)/r.height*resultCanvas.height,size=resultCanvas.width,span=size*.86,b=boards[w.board],aspect=b.type==='hex'?Math.sqrt(3)/2:1;let best=-1,distance=Infinity;for(let i=0;i<d.pins.length;i++){const p=d.pins[i],x=size/2+viewport.x*size+(p.x-.5)*span*aspect*viewport.zoom,y=size/2+viewport.y*size+(p.y-.5)*span*viewport.zoom,delta=(x-cx)**2+(y-cy)**2;if(delta<distance){distance=delta;best=i;}}if(best<0||distance>(span/((b.n||29)-1)*viewport.zoom*.6)**2)return;w.actions.push([0,best,tool==='erase'?-1:paint]);redoCache.set(w.id,[]);drawResult();saveState();});
       $('#mf-undo').addEventListener('click',()=>{const w=current();if(w?.actions.length){const a=redoCache.get(w.id)||[];a.push(w.actions.pop());redoCache.set(w.id,a);drawResult();saveState();}});$('#mf-redo').addEventListener('click',()=>{const w=current(),a=redoCache.get(w?.id)||[];if(w&&a.length){w.actions.push(a.pop());drawResult();saveState();}});
       $('#mf-replace-confirm').addEventListener('click',()=>{const w=current(),c=replacementCandidates().find(c=>c.id===replacement.candidate);if(!w||!c)return;let to=w.palette.findIndex(p=>p.id===c.id&&p.hex===c.hex);if(to<0){to=w.palette.length;w.palette.push({id:c.id,name:c.name,hex:c.hex});}w.actions.push([1,replacement.index,to]);redoCache.set(w.id,[]);go('materials');message('Цвет заменён. Расход пересчитан.');saveState();});
       $$('[data-mf-stock-size]').forEach(b=>b.addEventListener('click',()=>{state.size=b.dataset.mfStockSize;$('#mf-stock-size-options').hidden=true;$('#mf-stock-size-toggle').setAttribute('aria-expanded','false');state.stockSelected='C01';state.stockFilter='all';state.stockPage=0;$('#mf-top-size').textContent=state.size==='5'?'5 мм':'2,6 мм';renderStock();saveState();}));
       $$('[data-mf-filter]').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.mfFilter;state.stockFilter=state.stockFilter===next?'all':next;state.stockPage=0;state.stockSelected=filteredStock()[0]?.id||state.stockSelected;renderStock();saveState();}));
       $('#mf-stock-prev').addEventListener('click',()=>{state.stockPage--;state.stockSelected=filteredStock()[state.stockPage*layout.stockSize()]?.id||state.stockSelected;renderStock();saveState();});$('#mf-stock-next').addEventListener('click',()=>{state.stockPage++;state.stockSelected=filteredStock()[state.stockPage*layout.stockSize()]?.id||state.stockSelected;renderStock();saveState();});
-      $('#mf-add-color').addEventListener('click',newColor);$('#mf-stock-edit').addEventListener('click',()=>{const c=palette().find(c=>c.id===state.stockSelected);if(c)editColor(c);});
-      $('#mf-hue').addEventListener('input',()=>{const d=state.draft;d.changed=true;d.h=+$('#mf-hue').value;if(d.s<8){d.s=70;d.l=65;}renderDraft();});$('#mf-light').addEventListener('input',()=>{state.draft.changed=true;state.draft.l=+$('#mf-light').value;renderDraft();});$('#mf-saturation').addEventListener('input',()=>{state.draft.changed=true;state.draft.s=+$('#mf-saturation').value;renderDraft();});
-      $$('[data-mf-neutral]').forEach(b=>b.addEventListener('click',()=>{state.draft.changed=true;state.draft.s=0;state.draft.l={white:94,gray:55,black:12}[b.dataset.mfNeutral];renderDraft();}));$('#mf-color-next').addEventListener('click',()=>go('quantity'));
-      $$('[data-mf-quantity-mode]').forEach(b=>b.addEventListener('click',()=>{state.draft.mode=b.dataset.mfQuantityMode;$('#mf-quantity-error').textContent='';renderDraft();}));$$('[data-mf-word]').forEach(b=>b.addEventListener('click',()=>{state.draft.word=b.dataset.mfWord;$('#mf-quantity-error').textContent='';renderDraft();}));$$('[data-mf-accuracy]').forEach(b=>b.addEventListener('click',()=>{state.draft.accuracy=b.dataset.mfAccuracy;renderDraft();}));$('#mf-stock-number').addEventListener('input',()=>{state.draft.count=$('#mf-stock-number').value;});
-      $('#mf-save-color').addEventListener('click',async()=>{const d=state.draft,n=Number(d.count);if(d.mode==='words'&&!d.word){$('#mf-quantity-error').textContent='Выбери: много, средне, мало или нету.';return;}if(d.mode==='number'&&(d.count===''||!Number.isInteger(n)||n<0||n>100000)){$('#mf-quantity-error').textContent='Введи целое число от 0 до 100 000.';return;}if(!d.id&&palette().length>=64){$('#mf-quantity-error').textContent='В палитре уже 64 цвета.';return;}const c={id:d.id||'C'+String(Math.max(0,...palette().map(c=>Number(c.id.slice(1))||0))+1).padStart(2,'0'),name:d.name&&!d.changed?d.name:colorName(d),hex:hexOf(d),mode:d.mode,word:d.mode==='words'?d.word:null,count:d.mode==='number'?n:null,accuracy:d.accuracy};if(d.id){const i=palette().findIndex(c=>c.id===d.id);palette()[i]=c;}else palette().push(c);state.stockSelected=c.id;state.stockFilter='all';state.stockPage=Math.floor(palette().findIndex(p=>p.id===c.id)/layout.stockSize());go('stock');if(await saveState())message('Цвет и запас сохранены.');});
+      bindPalette();bindDrawing();
       $('#mf-backup-open').addEventListener('click',()=>go('backup'));
       
 $('#mf-backup-create').addEventListener('click',async()=>{
@@ -342,7 +555,7 @@ $('#mf-backup-create').addEventListener('click',async()=>{
       $('#mf-secret-close').addEventListener('click',()=>{$('#mf-diamond-secret').hidden=true;$('#mf-achievement').hidden=true;});
       $('#mf-start-diamond').addEventListener('click',()=>chooseSource('diamond'));
       drawDiamondBlock();
-      new MutationObserver(()=>{if(state.screen==='result')drawResult();if(state.screen==='works')renderWorks();}).observe(document.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});
+      new MutationObserver(()=>{if(state.screen==='result')drawResult();if(state.screen==='works')renderWorks();if(state.screen==='draw')renderDrawing();}).observe(document.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});
       
       root.inert=true;
       try{
@@ -351,7 +564,7 @@ $('#mf-backup-create').addEventListener('click',async()=>{
         for(const r of records){try{uploads.set(r.id,{name:r.name,image:await imageFromBlob(r.blob)});}catch{}}
         if(saved.data)restored=restore(saved.data);storeReady=true;savedLabel(restored?'Твой сундук открыт на этом устройстве':'Добавь свои цвета — они сохранятся на устройстве');if(migrationNeeded)await saveState();
       }catch(error){saveError=error;savedLabel('Не удалось открыть память браузера. '+error.message,true);}
-      finally{root.inert=false;go(state.screen,false);}
+      finally{root.inert=false;if(state.screen==='draw'&&current()){tool='paint';paint=drawingPalette(current())[0]?.index||0;}go(state.screen,false);}
       
       
       $('#mc-download-image').addEventListener('click',()=>{
@@ -368,7 +581,7 @@ $('#mf-backup-create').addEventListener('click',async()=>{
       window.addEventListener('appinstalled',()=>{$('#mc-install').hidden=true;installPrompt=null;});
       $('#mc-install').addEventListener('click',async()=>{if(!installPrompt)return;await installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('#mc-install').hidden=true;});
       window.addEventListener('beforeunload',e=>{if(saving||saveError){e.preventDefault();e.returnValue='';}});
-      MosaicUpdates.start({save:saveState,hasDraft:()=>!!state.draft&&['color','quantity'].includes(state.screen)});
+      MosaicUpdates.start({save:saveState,hasDraft:()=>!!state.draft&&state.screen==='color'});
 
       })();
   

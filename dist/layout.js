@@ -25,7 +25,7 @@ globalThis.MosaicLayout=(()=>{
       }
     }
     for(const screen of screens){
-      if(screen.dataset.mfScreen==='stock')continue;
+      if(['stock','color','draw'].includes(screen.dataset.mfScreen))continue;
       const heading=el('header','mc-screen-heading'),h2=screen.querySelector(':scope>h2');
       const backButton=[...screen.children].find(n=>n.tagName==='BUTTON'&&n.dataset.mfGo&&n.classList.contains('mf-plain'));
       if(backButton){const label=backButton.textContent;backButton.setAttribute('aria-label',label);backButton.textContent='‹';backButton.classList.add('mc-back');heading.append(backButton);}
@@ -38,10 +38,6 @@ globalThis.MosaicLayout=(()=>{
       previous.setAttribute('aria-label','Предыдущая страница');next.setAttribute('aria-label','Следующая страница');counter.setAttribute('aria-live','polite');
       pager.append(previous,counter,next);screen.replaceChildren(heading,body,pager);
       groupLabels(body);
-      if(screen.dataset.mfScreen==='color'){
-        const bead=root.querySelector('#mf-color-bead'),range=root.querySelector('#mf-hue'),unit=range.closest('.mc-unit');
-        unit.classList.add('mc-color-picker');unit.prepend(bead);
-      }
       pages.set(screen.dataset.mfScreen,{screen,body,pager,previous,counter,next,index:0,chunks:[]});
       previous.addEventListener('click',()=>select(screen.dataset.mfScreen,-1));
       next.addEventListener('click',()=>select(screen.dataset.mfScreen,1));
@@ -90,6 +86,11 @@ globalThis.MosaicLayout=(()=>{
       root.classList.toggle('mc-keyboard',document.activeElement?.matches('input[type="text"],input[type="number"],textarea')&&(height<500||height<innerHeight*.8));
       if(active==='stock'){
         const size=stockSize();if(size!==lastStockSize){lastStockSize=size;stockChanged();}
+        return;
+      }
+      if(active==='draw'){
+        const board=root.querySelector('.mc-draw-board'),canvas=root.querySelector('#mc-draw-canvas'),side=Math.floor(Math.min(board.clientWidth,board.clientHeight));
+        canvas.style.width=side+'px';canvas.style.height=side+'px';
         return;
       }
       const p=pages.get(active);if(!p)return;
