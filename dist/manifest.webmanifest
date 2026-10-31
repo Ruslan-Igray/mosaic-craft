@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "Мозаика — мастерская блоков",
+  "short_name": "Мозаика",
+  "description": "Крафти термомозаику из своих цветов. Сохраняй запасы и схемы на телефоне.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#d9e5eb",
+  "theme_color": "#167c9e",
+  "icons": [
+    {"src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "./icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
