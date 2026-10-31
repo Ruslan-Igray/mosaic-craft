@@ -256,3 +256,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 @media(display-mode:standalone){#mosaic-full-prototype{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))}}
 
 #mosaic-full-prototype #mf-edit-toggle,#mosaic-full-prototype #mc-work-settings-toggle{display:flex;width:100%}
+
+#mosaic-full-prototype .mc-version-row{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--mf-line);padding-top:8px}
+#mosaic-full-prototype #mc-app-version{font-size:13px;color:var(--mf-muted);white-space:nowrap}
+#mosaic-full-prototype #mc-check-updates{font-size:14px;min-height:44px}
+#mosaic-full-prototype .mc-update-status{font-size:13px;line-height:1.4;margin:3px 0;color:var(--mf-muted);overflow-wrap:anywhere}
+#mosaic-full-prototype .mc-update-panel{margin-top:15px;background:var(--mf-paper);padding:12px;border:2px solid var(--mf-accent)}
+#mosaic-full-prototype .mc-update-panel p{font-size:15px;margin:0}
+#mosaic-full-prototype .mc-update-panel button{font-size:16px;margin-top:10px}

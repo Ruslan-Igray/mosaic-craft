@@ -1,7 +1,10 @@
 'use strict';
+const RELEASE = {"version":"1.1.0","build":"844d30445e","assetTag":"1.1.0-38ffe315e2"};
 const PREFIX = 'mosaic-craft:' + new URL(self.registration.scope).pathname + ':';
-const CACHE = PREFIX + '1.0.0-244abbd96e';
-const CORE = ['./', './index.html', './app.css', './app.js', './storage.js',
+const CACHE = PREFIX + RELEASE.version + '-' + RELEASE.build;
+const versioned = file => './' + file + '?v=' + RELEASE.assetTag;
+const CORE = ['./', './index.html', versioned('app.css'), versioned('app.js'),
+  versioned('storage.js'), versioned('updates.js'), versioned('version.js'),
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png',
   './icons/maskable-512.png'].map(path => new URL(path, self.registration.scope).href);
 self.addEventListener('install', event => {
@@ -21,8 +24,9 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin || !url.href.startsWith(self.registration.scope)) return;
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match(new URL('./index.html', self.registration.scope).href)));
+    event.respondWith(caches.open(CACHE).then(cache =>
+      cache.match(new URL('./index.html', self.registration.scope).href).then(cached => cached || fetch(event.request))));
   } else if (CORE.includes(url.href)) {
-    event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request)));
+    event.respondWith(caches.open(CACHE).then(cache => cache.match(event.request)).then(cached => cached || fetch(event.request)));
   }
 });

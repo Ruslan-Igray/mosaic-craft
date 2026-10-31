@@ -6,7 +6,7 @@ from urllib.request import Request, urlopen
 
 root=Path(__file__).resolve().parent.parent/'dist'
 origin='https://ruslan-igray.github.io/mosaic-craft/'
-names=['index.html','app.js','storage.js','app.css','sw.js','manifest.webmanifest',
+names=['index.html','app.js','storage.js','updates.js','version.js','version.json','app.css','sw.js','manifest.webmanifest',
        'icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png']
 last=None
 for attempt in range(12):
@@ -17,7 +17,7 @@ for attempt in range(12):
                 data=response.read()
                 assert response.status==200,(name,response.status)
             assert hashlib.sha256(data).digest()==hashlib.sha256((root/name).read_bytes()).digest(),name+' differs from the tested release'
-        print('HTTPS 200: app and all 8 assets match the tested release.')
+        print('HTTPS 200: app and all offline/update assets match the tested release.')
         break
     except Exception as error:
         last=error

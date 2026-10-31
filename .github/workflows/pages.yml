@@ -25,6 +25,8 @@ jobs:
         run: |
           node --check dist/app.js
           node --check dist/storage.js
+          node --check dist/updates.js
+          node --check dist/version.js
           node --check dist/sw.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
