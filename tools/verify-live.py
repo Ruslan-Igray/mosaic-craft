@@ -6,7 +6,7 @@ from urllib.request import Request, urlopen
 
 root=Path(__file__).resolve().parent.parent/'dist'
 origin='https://ruslan-igray.github.io/mosaic-craft/'
-names=['index.html','app.js','storage.js','updates.js','version.js','version.json','app.css','sw.js','manifest.webmanifest',
+names=['index.html','app.js','storage.js','updates.js','layout.js','version.js','version.json','app.css','screen.css','sw.js','manifest.webmanifest',
        'icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png']
 last=None
 for attempt in range(12):

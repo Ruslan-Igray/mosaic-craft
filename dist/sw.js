@@ -1,9 +1,9 @@
 'use strict';
-const RELEASE = {"version":"1.1.0","build":"844d30445e","assetTag":"1.1.0-38ffe315e2"};
+const RELEASE = {"version":"1.2.0","build":"e688576096","assetTag":"1.2.0-1ca36ae865"};
 const PREFIX = 'mosaic-craft:' + new URL(self.registration.scope).pathname + ':';
 const CACHE = PREFIX + RELEASE.version + '-' + RELEASE.build;
 const versioned = file => './' + file + '?v=' + RELEASE.assetTag;
-const CORE = ['./', './index.html', versioned('app.css'), versioned('app.js'),
+const CORE = ['./', './index.html', versioned('app.css'), versioned('screen.css'), versioned('app.js'), versioned('layout.js'),
   versioned('storage.js'), versioned('updates.js'), versioned('version.js'),
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png',
   './icons/maskable-512.png'].map(path => new URL(path, self.registration.scope).href);
