@@ -1,0 +1,37 @@
+name: Publish Mosaic Craft
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: mosaic-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://ruslan-igray.github.io/mosaic-craft/
+    steps:
+      - name: Get app source
+        uses: actions/checkout@v6
+      - name: Prepare bundled icons
+        run: python3 tools/materialize-icons.py
+      - name: Check app scripts
+        run: |
+          node --check dist/app.js
+          node --check dist/storage.js
+          node --check dist/sw.js
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload app
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@v4
